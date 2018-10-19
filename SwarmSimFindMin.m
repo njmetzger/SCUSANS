@@ -47,7 +47,6 @@ for i=1:N
 end
 
 %% Find Min/Max
-V_const=3; 
 
 % Determine distance and angle to each robot 
 for i=1:N 

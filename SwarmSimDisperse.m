@@ -1,4 +1,4 @@
-function [Vf] = SwarmSimDisperse(RobotParams, NRobot, SensorRange)
+function [Vf] = SwarmSimDisperse(RobotParams, NRobot, SensorRange, RobotSpeed)
 %SwarmSimDisperse Disperse behavior for Swarm_Adaptive_Navigation_Simulator.slx
 %   LATEST UPDATE: 09/04/2018 by NJM 
 % This disperse behavior is called by the Robot # behavior blocks in
@@ -53,7 +53,7 @@ end
 
 % Define robot constant velocity - This should be added as an arguement
 % later
-V_const=3; 
+V_const=RobotSpeed; 
 
 % Determine distance and angle to each robot 
 for i=1:N 

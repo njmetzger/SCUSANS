@@ -1,4 +1,4 @@
-function [Vf] = SwarmSimAttract(RobotParams, NRobot, SensorRange)
+function [Vf] = SwarmSimAttract(RobotParams,NRobot,SensorRange,RobotSpeed)
 %SwarmSimAttract Attract behavior for Swarm_Adaptive_Navigation_Simulator.slx
 %   LATEST UPDATE: 08/30/2018 by NJM 
 % This attract behavior is called by the Robot # behavior blocks in
@@ -51,7 +51,7 @@ for i=1:N
 end
 
 %% Attract Behavior 
-V_const=3; 
+V_const=RobotSpeed; 
 
 % Determine distance and angle to each robot 
 for i=1:N 

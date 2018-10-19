@@ -59,8 +59,8 @@ Vx=sum(x_comp);
 Vy=sum(y_comp);
 
 % Recalculate unit vectors for 90 degree rotation
-Vfy=(Vx^2+Vy^2)^(.5)*sin(atan2(Vy,Vx) + pi);
-Vfx=(Vx^2+Vy^2)^(.5)*cos(atan2(Vy,Vx) + pi);
+Vfy=(Vx^2+Vy^2)^(.5)*sin(atan2(Vy,Vx) + pi/2);
+Vfx=(Vx^2+Vy^2)^(.5)*cos(atan2(Vy,Vx) + pi/2);
 
 % Convert the sums into a vector that is then passed to the robot:
 Vf= [Vfx Vfy Vft];
