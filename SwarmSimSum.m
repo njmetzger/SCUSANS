@@ -1,4 +1,4 @@
-function [ThetaCommand] = SwarmSimSum(Attract, Disperse, Avoidance, FindMin, FindMax)
+function [ThetaCommand] = SwarmSimSum(Attract, Disperse, Avoidance, FindMin, FindMax, FindContour)
 %SwarmSimSum Aggregates the velocity inputs from individual behaviors into a single heading command.
 %   SwarmSimSum is the function called in the Sum blocks in
 %   Swarm_Adaptive_Navigation_Simulator/Robot # Behavior. Each behavior
@@ -26,17 +26,19 @@ function [ThetaCommand] = SwarmSimSum(Attract, Disperse, Avoidance, FindMin, Fin
 
 % t_agg = Attract(3) + Disperse(3) + Avoidance(3) + FindMin(3) + FindMax(3) % + NewBehavior(3) %
 
-Total= Attract + Disperse + Avoidance + FindMin + FindMax;
+Total= Attract + Disperse + 100*Avoidance + FindMin + FindMax + FindContour;
 
 x_agg= Total(1);
 y_agg= Total(2);
 theta_agg= Total(3);
 
-if x_agg == 0 && y_agg ==0
-    ThetaCommand= NaN;
-else
-    ThetaCommand = atan2(y_agg, x_agg);
-end
+ThetaCommand = atan2(y_agg, x_agg);  
+
+% if x_agg == 0 && y_agg ==0
+%     ThetaCommand= NaN;
+% else
+%     ThetaCommand = atan2(y_agg, x_agg);
+% end
 
 end
 
