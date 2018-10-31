@@ -8,7 +8,7 @@ close all
 % Simulation parameters
 isExp= true;
 if isExp
-    robots = ["pink", "blue","red"];
+    robots = [string('pacific-blue'), string('celeste'),string('pink')];
     NUM_ROBOTS = length(robots);
 else
     NUM_ROBOTS=5; 
@@ -30,7 +30,7 @@ VideoFilename='findContour_12_6';
 % Setup matlab directory to run in current runFile folder
 runFileFunctionName=mfilename;
 runFilePath=mfilename('fullpath');
-BaseFolderPath = replace(runFilePath,runFileFunctionName,"");
+BaseFolderPath = replace(runFilePath,runFileFunctionName,string(''));
 cd(BaseFolderPath);
 
 % If video file already exists, append datetime data to its filename 
@@ -59,8 +59,12 @@ end
 h = waitbar(0,'Please wait...');
 
 % Specify sim options and run simulation
-% myoptions = simset('SrcWorkspace','current','DstWorkspace','current');
-sim('Swarm_Robot_N',SIM_TIME)
+if isExp
+    myoptions = simset('Solver', 'FixedStepDiscrete', 'FixedStep', '0.1');
+    sim('Swarm_Robot_N',SIM_TIME,myoptions)
+else
+    sim('Swarm_Robot_N',SIM_TIME)
+end
 simOut.simout=simout;
 
 % Close waitbar
@@ -76,7 +80,7 @@ end
 % Resample simulation data to have uniform time step. Use linear
 % interpolation to find intermediate values. 
 % desiredNumFrames=numel(simOut.simout.Time);
-desiredFPS=60;
+desiredFPS=20;
 desiredNumFrames=desiredFPS*SIM_TIME;
 uniform_time=linspace(0,max(simOut.simout.Time),desiredNumFrames);
 resamp_data=resample(simOut.simout,uniform_time);
@@ -189,15 +193,15 @@ set_param('Swarm_Robot_Base/Robot 1 Behavior/Avoid Range','Value',num2str(AvoidR
 
 % Construct total system of N robots and link blocks 
 if isExp
-    rs = "{";
+    rs = string('{');
     for j = 1:length(robots)
         if j ==1
-            rs = rs+ sprintf("'%s'",robots(j));
+            rs = rs+ sprintf(string('''%s'''),robots(j));
         else
-            rs = rs+ sprintf(",'%s'", robots(j));
+            rs = rs+ sprintf(',''%s''', robots(j));
         end
     end
-    rs = rs + "}";
+    rs = rs + '}';
     add_block('Swarm_Robot_Base/Loop_Pacer', 'Swarm_Robot_N/Loop_Pacer')
     add_block('Swarm_Robot_Base/Optitrack', 'Swarm_Robot_N/Optitrack')
     set_param('Swarm_Robot_N/Optitrack', 'rigidBodyNames', rs)
@@ -236,6 +240,8 @@ for i=1:N
         addBlockAndSpace(base_model, response_model,vert_spacing, 0, i )
 
         b_behavior{i} = get_param(response_model,'PortHandles');
+        add_line('Swarm_Robot_N', SS_handles{i}.Outport(1), b_behavior{i}.Inport(2));
+        pos=get_param(response_model,'position');
     else
         base_model='Swarm_Robot_Base/Robot 1 SimResponse';
         response_model=sprintf('Swarm_Robot_N/Robot %i SimResponse',i);
@@ -276,33 +282,9 @@ for i=1:N
     
     %Add communication blocks for experiment robots
     if isExp
-        %Create Robot velocity Demuxers
-        base_model = 'Swarm_Robot_Base/Demux_velocity';
-        new_model = sprintf('Swarm_Robot_N/Demux_velocity_%d', i);
-        addBlockAndSpace(base_model, new_model,vert_spacing, 0, i )
-        VD_handle = get_param(new_model, 'PortHandles');
-        %Add communication Blocks
-        base_model = 'Swarm_Robot_Base/Robot_command';
-        new_model = sprintf('Swarm_Robot_N/Robot_command_%s', robots(i));
-        hor_spacing = -50;
-        addBlockAndSpace(base_model, new_model,vert_spacing, hor_spacing, i )
+        new_model = sprintf('Swarm_Robot_N/Robot %d ExpResponse/Robot_command', i);
         set_param(new_model, 'robotName', robots(i))
         CB_handles = get_param(new_model, 'PortHandles');
-
-        %Add signal bus block
-        base_model = 'Swarm_Robot_Base/Bus_signal';
-        new_model = sprintf('Swarm_Robot_N/Bus_signal_%d', i);
-        addBlockAndSpace(base_model, new_model,vert_spacing, 0, i )
-        BB_handles = get_param(new_model, 'PortHandles');
-        pos=get_param(new_model,'position'); 
-        %add lines
-        add_line('Swarm_Robot_N', b_behavior{i}.Outport(1), VD_handle.Inport(1))
-        for j = 1:3
-            add_line('Swarm_Robot_N',VD_handle.Outport(j),CB_handles.Inport(j));
-        end
-        for k = 1:4
-            add_line('Swarm_Robot_N',CB_handles.Outport(k),BB_handles.Inport(k));
-        end
     end
 
 end
@@ -322,18 +304,11 @@ set_param('Swarm_Robot_N/Mux','position',pos)
 
 h_mux = get_param('Swarm_Robot_N/Mux','PortHandles');
 
-% Connect mux inputs and outputs 
-if isExp
-    for i=1:N
-        add_line('Swarm_Robot_N',SS_handles{i}.Outport(1),h_mux.Inport(i),'autorouting','on');
-        add_line('Swarm_Robot_N',SS_handles{i}.Outport(1),h_behavior{i}.Inport(1),'autorouting','on');
-    end
-else
-    for i=1:N
-        add_line('Swarm_Robot_N',b_behavior{i}.Outport(1),h_mux.Inport(i),'autorouting','on');
-        add_line('Swarm_Robot_N',h_mux.Outport(1),h_behavior{i}.Inport(1),'autorouting','on');
-    end
+for i=1:N
+    add_line('Swarm_Robot_N',b_behavior{i}.Outport(1),h_mux.Inport(i),'autorouting','on');
+    add_line('Swarm_Robot_N',h_mux.Outport(1),h_behavior{i}.Inport(1),'autorouting','on');
 end
+
 
 
 %% Create new "To Workspace" block
