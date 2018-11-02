@@ -19,7 +19,7 @@ SIM_TIME=10;
 
 SensorRange=1.5;
 AvoidRange=.6;
-DesiredValue=2;
+DesiredValue=-0.5;
 
 % Constants 
 NUM_SIGNALS_PER_ROBOT=4;
@@ -189,7 +189,8 @@ load_system('Swarm_Robot_Base')
 % Set base robot parameters
 set_param('Swarm_Robot_Base/Robot 1 Behavior/Sensor Range','Value',num2str(SensorRange));
 set_param('Swarm_Robot_Base/Robot 1 Behavior/Avoid Range','Value',num2str(AvoidRange));
-%set_param('Swarm_Robot_Base/Robot 1 Behavior/Desired Value','Value',num2str(DesiredValue));
+set_param('Swarm_Robot_Base/Robot 1 Behavior/Avoid Range','Value',num2str(AvoidRange));
+set_param('Swarm_Robot_Base/Robot 1 Behavior/Desired Value','Value',num2str(DesiredValue));
 
 % Construct total system of N robots and link blocks 
 if isExp

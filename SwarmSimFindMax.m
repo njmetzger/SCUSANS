@@ -47,7 +47,7 @@ for i=1:N
     SensorValue(i)=RobotParams(i);
 end
 
-%% Find Min/Max 
+%% Find Min/Max
 
 % Determine distance and angle to each robot 
 for i=1:N 

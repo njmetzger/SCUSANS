@@ -50,6 +50,7 @@ for i=1:N
 end
 
 %% Disperse Behavior 
+ 
 
 % Determine distance and angle to each robot 
 for i=1:N 
