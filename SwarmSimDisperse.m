@@ -51,16 +51,12 @@ end
 
 %% Disperse Behavior 
 
-% Define robot constant velocity - This should be added as an arguement
-% later
-V_const=3; 
-
 % Determine distance and angle to each robot 
 for i=1:N 
     d(i) = ( ( x(NRobot)-x(i) )^2 + ( y(NRobot)-y(i) )^2 )^(0.5);
     O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-    Vx(i)= V_const*cos(O(i));
-    Vy(i)= V_const*sin(O(i));
+    Vx(i)= cos(O(i));
+    Vy(i)= sin(O(i));
 end
 
 % If robot is within sensor range of  Nrobot, it is attracted to that

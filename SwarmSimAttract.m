@@ -51,14 +51,13 @@ for i=1:N
 end
 
 %% Attract Behavior 
-V_const=3; 
 
 % Determine distance and angle to each robot 
 for i=1:N 
     d(i) = sqrt(abs(x(NRobot)-x(i))^2+abs(y(NRobot)-y(i))^2);
     O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-    Vx(i)= V_const*cos(O(i));
-    Vy(i)= V_const*sin(O(i));
+    Vx(i)= cos(O(i));
+    Vy(i)= sin(O(i));
 end
 
 % If robot is within sensor range of  Nrobot, it is attracted to that
@@ -98,7 +97,7 @@ idx=find(d<=SensorRange);
 Vfx= sum(Vx(idx));
 Vfy= sum(Vy(idx)); 
 
-Vf= [Vfx Vfy Vft];
+Vf= [Vfx Vfy Vft]/length(idx);
 
 
 end 
