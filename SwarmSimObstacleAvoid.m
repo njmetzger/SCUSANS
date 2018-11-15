@@ -58,8 +58,7 @@ end
 % Calculate avoidance velocities 
 for i=1:N
     if d(i)<=AvoidRange && d(i)~=0
-        mag_velocity(i)=100*1*(1/d(i)-1/AvoidRange)^4;
-        mag_velocity(i)=100*1*(1/d(i))^4;
+        mag_velocity(i)=100*1*(AvoidRange/d(i))^4;
 %         disp('avoid')
 
     else

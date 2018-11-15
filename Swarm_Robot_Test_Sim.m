@@ -56,19 +56,20 @@ end
 % profile on
 
 % Setup waitbar 
-h = waitbar(0,'Please wait...');
+%h = waitbar(0,'Please wait...');
 
 % Specify sim options and run simulation
 if isExp
     myoptions = simset('Solver', 'FixedStepDiscrete', 'FixedStep', '0.1');
     sim('Swarm_Robot_N',SIM_TIME,myoptions)
 else
-    sim('Swarm_Robot_N',SIM_TIME)
+    myoptions = simset('Solver', 'VariableStepAuto');
+    sim('Swarm_Robot_N',SIM_TIME,myoptions)
 end
 simOut.simout=simout;
 
 % Close waitbar
-close(h)
+%close(h)
 
 est_num_robots=size(simOut.simout.Data,2)/NUM_SIGNALS_PER_ROBOT;
 
@@ -139,7 +140,7 @@ for i=1:size(simOut.simout.Data,1)-1
     
     % Update position points for each robot 
     for k=1:NUM_ROBOTS
-        addpoints(h_line(k),Robot_Data(k).x(i),Robot_Data(k).y(i));
+        addpoints(h_line(k),Robot_Data(k).x(i),Robot_Data(k).y(i),Robot_Data(k).sensor_value(i));
     end
     
 drawnow limitrate
@@ -335,10 +336,10 @@ add_line('Swarm_Robot_N',h_mux.Outport(1),h_simout.Inport(1),'autorouting','on')
 % set_param('Swarm_Robot_N/SimOut_Data','SaveFormat','Structure With Time')
 
 % %% Add a waitbar system 
-load_system('waitbar_system')
+%load_system('waitbar_system')
 
-add_block('waitbar_system/Waitbar_Timer','Swarm_Robot_N/Waitbar_Timer');
-set_param('waitbar_system/Waitbar_Timer/End_Time','Value',num2str(SIM_TIME));
+%add_block('waitbar_system/Waitbar_Timer','Swarm_Robot_N/Waitbar_Timer');
+%set_param('waitbar_system/Waitbar_Timer/End_Time','Value',num2str(SIM_TIME));
 
 %% Define robot initial conditions
 if ~isExp

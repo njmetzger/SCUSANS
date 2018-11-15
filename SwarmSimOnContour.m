@@ -38,7 +38,7 @@ robotValue=readScalarField(x(NRobot),y(NRobot));
 
 % Check to see if robot is close to desired contour, below, or above
 % contour
-if abs(robotValue - DesiredValue)< .4
+if abs(robotValue - DesiredValue)< 2.5
     onContour=true;
     contourState=3;
     return;
