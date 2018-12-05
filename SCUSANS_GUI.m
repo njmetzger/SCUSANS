@@ -22,7 +22,7 @@ function varargout = SCUSANS_GUI(varargin)
 
 % Edit the above text to modify the response to help SCUSANS_GUI
 
-% Last Modified by GUIDE v2.5 31-Oct-2018 10:57:39
+% Last Modified by GUIDE v2.5 24-Nov-2018 11:20:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -54,8 +54,8 @@ function SCUSANS_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for SCUSANS_GUI
 handles.output = hObject;
 
-assignin('base', 'base_handles' , handles)
-
+%assignin('base', 'base_handles' , handles)
+open('Swarm_Robot_Base_2018a.slx') 
 % Update handles structure
 guidata(hObject, handles);
 
@@ -264,13 +264,239 @@ set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/FindMax_Switch','sw',num2str(
 set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/FollowContour_Switch','sw',num2str(handles.cbox_ContourFollow.Value))
 set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/FollowRidge_Switch','sw',num2str(handles.cbox_RidgeFollow.Value))
 
+% set behavior switch used to plot time histories of robots: 
+if handles.cbox_FindMin.Value && handles.cbox_FindMax.Value 
+    behavior = 'Incompatible'
+elseif handles.cbox_FindMin.Value && handles.cbox_ContourFollow.Value 
+    behavior = 'Incompatible'
+elseif handles.cbox_FindMax.Value && handles.cbox_ContourFollow.Value  
+    behavior = 'Incompatible'
+elseif handles.cbox_FindMax.Value && handles.cbox_ContourFollow.Value && handles.cbox_FindMin.Value
+    behavior = 'Incompatible'
+elseif handles.cbox_FindMin.Value 
+    behavior = 'Find Min' 
+elseif handles.cbox_FindMax.Value 
+    behavior = 'Find Max' 
+elseif handles.cbox_ContourFollow.Value
+    behavior = 'Contour Following' 
+else 
+    behavior = 'Null' 
+end 
+
 % set simulation parameters based off text edit boxes: 
 NUM_ROBOTS= str2double(handles.numRobots_edit.String);
 SIM_TIME= str2double(handles.SimRunTime_edit.String);
 SENSOR_RANGE= str2double(handles.SensorRange_edit.String);
 AVOID_RANGE= str2double(handles.AvoidanceRange_edit.String);
 DESIRED_VALUE= str2double(handles.DesiredContour_edit.String);
+CONTOUR_BUFFER= str2double(handles.contourBuffer_edit.String);
+% ROBOT_SPEED= str2double(handles.robSpeed_edit.String); 
+
+x_init_center= str2double(handles.initCond_centerX_edit.String) 
+y_init_center= str2double(handles.initCond_centerY_edit.String) 
+init_radius= str2double(handles.initCond_radius_edit.String) 
+
+%because robot_speed is not a parameter used inside swarm_robot_test_sim,
+%update robot speed here: 
+
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/Robot Speed','value', handles.robSpeed_edit.String);
+
+% determine Scalar Field to use based off the radio button group: 
+% To add a scalar field, make sure that it is added in three places: 
+%     1) readScalarField function 
+%     2) SCUSANS_GUI as a radio button 
+%     3) list below so it can be passed to the test_sim file
+if handles.compField_RB.Value
+    ScalarFieldSelection = 1;
+elseif handles.singSource_RB.Value
+    ScalarFieldSelection = 2;
+elseif handles.singSink_RB.Value
+    ScalarFieldSelection = 3;
+else
+    disp('No Value Selected')
+end 
 
 % run simulation: 
-Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE) 
+Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE,CONTOUR_BUFFER,ScalarFieldSelection,behavior,x_init_center,y_init_center,init_radius) 
 
+
+
+function contourBuffer_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to contourBuffer_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of contourBuffer_edit as text
+%        str2double(get(hObject,'String')) returns contents of contourBuffer_edit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function contourBuffer_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to contourBuffer_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in prevScalarField_PB.
+function prevScalarField_PB_Callback(hObject, eventdata, handles)
+% hObject    handle to prevScalarField_PB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if handles.compField_RB.Value
+    % set the scalarfieldselection to the corresponding desired value:
+    ScalarFieldSelection = 1;
+    % set field width to appropriate value for the desired field:
+    FIELD_WIDTH= 300;
+    % use the same plotting logic as is used in Swarm_Robot_Test_Sim
+    figure()
+    ax=gca;
+    ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
+    ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
+    %cmap = hsv(N);
+    res=100;
+    xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
+    ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
+    [X,Y] = meshgrid(xdivs,ydivs);
+    Z=readScalarField(X,Y,ScalarFieldSelection);
+    surf(X,Y,Z);
+    title('Composite Scalar Field: Field Width= 300, Suggested Robot Speed= 90')
+    view([0 90])
+elseif handles.singSource_RB.Value
+    % set the scalarfieldselection to the corresponding desired value:
+    ScalarFieldSelection = 2;
+    % set field width to appropriate value for the desired field:
+    FIELD_WIDTH= 300;   
+    % use the same plotting logic as is used in Swarm_Robot_Test_Sim
+    figure()
+    ax=gca;
+    ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
+    ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
+    %cmap = hsv(N);
+    res=100;
+    xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
+    ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
+    [X,Y] = meshgrid(xdivs,ydivs);
+    Z=readScalarFieldMulti(X,Y,ScalarFieldSelection);
+    surf(X,Y,Z);
+    title('Single Source: Field Width= 300, Suggested Robot Velocity= 90')
+    view([0 90])
+elseif handles.singSink_RB.Value
+    % Set the scalarfieldselection to the corresponding desired value: 
+    ScalarFieldSelection = 3;
+    % set the field width to appropriate value for the desired field: 
+    FIELD_WIDTH= 300;  
+    % use the same plotting logic as is used in Swarm_Robot_Test_Sim
+    figure()
+    ax=gca;
+    ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
+    ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
+    %cmap = hsv(N);
+    res=100;
+    xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
+    ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
+    [X,Y] = meshgrid(xdivs,ydivs);
+    Z=readScalarFieldMulti(X,Y,ScalarFieldSelection);
+    surf(X,Y,Z);
+    title('Single Sink: Field Width= 300, Suggested Robot Velocity= 90')
+    view([0 90])
+else
+    disp('No Value Selected')
+end
+
+
+
+function robSpeed_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to robSpeed_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of robSpeed_edit as text
+%        str2double(get(hObject,'String')) returns contents of robSpeed_edit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function robSpeed_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to robSpeed_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function initCond_radius_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to initCond_radius_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of initCond_radius_edit as text
+%        str2double(get(hObject,'String')) returns contents of initCond_radius_edit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function initCond_radius_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to initCond_radius_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function initCond_centerX_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to initCond_centerX_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of initCond_centerX_edit as text
+%        str2double(get(hObject,'String')) returns contents of initCond_centerX_edit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function initCond_centerX_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to initCond_centerX_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function initCond_centerY_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to initCond_centerY_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of initCond_centerY_edit as text
+%        str2double(get(hObject,'String')) returns contents of initCond_centerY_edit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function initCond_centerY_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to initCond_centerY_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

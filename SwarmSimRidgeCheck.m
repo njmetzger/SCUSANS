@@ -1,4 +1,4 @@
-function [ridgeState, Vfx, Vfy] = SwarmSimRidgeCheck(RobotParams, NRobot, SensorRange)
+function [ridgeState, Vfx, Vfy] = SwarmSimRidgeCheck(RobotParams, NRobot, SensorRange,ScalarFieldSelection)
 % SWARMSIMCHECKRIDGE - <Determines....>
 
 % Outputs:
@@ -40,7 +40,7 @@ for i=1:N
     y(i)=RobotParams(i*4-2);
     theta(i)=RobotParams(i*4-1);
 %     SensorValue(i)=RobotParams(i);
-    SensorValue(i) = readScalarField(x(i),y(i));
+    SensorValue(i) = readScalarField(x(i),y(i),ScalarFieldSelection);
 end
 
 % Determine distance and angle to each robot 

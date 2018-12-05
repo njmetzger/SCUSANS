@@ -13,6 +13,8 @@ function [Vf] = SwarmSimObstacleAvoid(RobotParams, NRobot, SensorRange, AvoidRan
 % Determine number of robots based off length of robot params vector 
 N= floor(length(RobotParams)/4);
 
+% troubleshooting purposes: 
+% assignin( 'base' , 'RobotParams_base' , RobotParams)
 %% Initialize Variables 
 % position variables for 3-DOF omnibot are x,y,and theta (rotation about z-axis)
 x=zeros(1,N);               
@@ -58,17 +60,17 @@ end
 % Calculate avoidance velocities 
 for i=1:N
     if d(i)<=AvoidRange && d(i)~=0
-        mag_velocity(i)=100*1*(1/d(i)-1/AvoidRange)^4;
-        mag_velocity(i)=100*1*(1/d(i))^4;
+        %mag_velocity(i)=100*1*(1/d(i)-1/AvoidRange)^4;
+        mag_velocity(i)=100*1*(AvoidRange/d(i))^4;
 %         disp('avoid')
 
-    else
-        mag_velocity(i)=0;
+    %else
+       % mag_velocity(i)=0;
     end
     
-    if mag_velocity(i)>0.5*realmax
-        mag_velocity(i)=0.5*realmax;
-    end
+     if mag_velocity(i)>0.5*realmax
+         mag_velocity(i)=0.5*realmax;
+     end
     
     Vx(i)= mag_velocity(i)*cos(O(i)); 
     Vy(i)= mag_velocity(i)*sin(O(i));     
