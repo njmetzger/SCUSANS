@@ -8,7 +8,7 @@ close all
 % Simulation parameters
 isExp= true;
 if isExp
-    robots = [string('pacific-blue'), string('celeste'),string('pink')];
+    robots = [string('redwood'),string('pacific-blue'),string('celeste')];
     NUM_ROBOTS = length(robots);
 else
     NUM_ROBOTS=5; 
@@ -17,9 +17,9 @@ end
 
 SIM_TIME=10;
 
-SensorRange=1.5;
-AvoidRange=.6;
-DesiredValue=-0.5;
+SensorRange=5;
+AvoidRange=.3;
+DesiredValue=6;
 
 % Constants 
 NUM_SIGNALS_PER_ROBOT=4;

@@ -1,4 +1,4 @@
-function [contourState,  onContour, belowContour, aboveContour] = SwarmSimOnContour(RobotParams, NRobot, SensorRange, DesiredValue)
+function [contourState,  onContour, belowContour, aboveContour,robotValue] = SwarmSimOnContour(RobotParams, NRobot, SensorRange, DesiredValue)
 % SWARMSIMONCOUNTER - <Determines if a robot is above, below, or on a
 % desired contour value.>
 
@@ -28,17 +28,17 @@ for i=1:N
     x(i)=RobotParams(i*4-3);
     y(i)=RobotParams(i*4-2);
     theta(i)=RobotParams(i*4-1);
-    SensorValue(i)=RobotParams(i);
+    SensorValue(i)=RobotParams(i*4);
 end
 
 %% Algorithm
 
 % Grab robot's sensor reading
-robotValue=readScalarField(x(NRobot),y(NRobot));
+robotValue=SensorValue(NRobot);
 
 % Check to see if robot is close to desired contour, below, or above
 % contour
-if abs(robotValue - DesiredValue)< 2.5
+if abs(robotValue - DesiredValue)< .5
     onContour=true;
     contourState=3;
     return;
