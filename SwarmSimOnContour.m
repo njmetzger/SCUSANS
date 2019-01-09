@@ -1,4 +1,4 @@
-function [contourState,  onContour, belowContour, aboveContour] = SwarmSimOnContour(RobotParams, NRobot, SensorRange, DesiredValue,CONTOUR_BUFFER,ScalarFieldSelection)
+function [contourState,  onContour, belowContour, aboveContour] = SwarmSimOnContour(RobotParams, NRobot, SensorRange, DesiredValue,CONTOUR_BUFFER)
 % SWARMSIMONCOUNTER - <Determines if a robot is above, below, or on a
 % desired contour value.>
 

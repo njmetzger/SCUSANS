@@ -1,4 +1,4 @@
-function [Vf] = SwarmSimFindMax(RobotParams, NRobot, SensorRange, ScalarFieldSelection)
+function [Vf] = SwarmSimFindMax(RobotParams, NRobot, SensorRange)
 %SwarmSimFindMax Find Max behavior called in Find Max block of Swarm_Robot_Base
 %        MOST RECENT UPDATE: 09/18/2018 by NJM
 %   SwarmSimFindMax takes the inputs of RobotParams, NRobot, and Sensor
@@ -44,7 +44,7 @@ for i=1:N
     x(i)=RobotParams(i*4-3);
     y(i)=RobotParams(i*4-2);
     theta(i)=RobotParams(i*4-1);
-    SensorValue(i)=RobotParams(i);
+    SensorValue(i)=RobotParams(i*4);
 end
 
 %% Find Min/Max
@@ -53,7 +53,7 @@ end
 for i=1:N 
     d(i) = sqrt(abs(x(NRobot)-x(i))^2+abs(y(NRobot)-y(i))^2);
     O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-    amp(i)=(readScalarField(x(i),y(i),ScalarFieldSelection)-readScalarField(x(NRobot),y(NRobot),ScalarFieldSelection));
+    amp(i) = SensorValue(i)-SensorValue(NRobot);
 end
 
 % max_idx=find(robotAmp==max(robotAmp));

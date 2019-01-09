@@ -1,4 +1,4 @@
-function [Vf, onContour]  = SwarmSimFindContour(RobotParams, NRobot, SensorRange, DesiredValue,ScalarFieldSelection)
+function [Vf, onContour]  = SwarmSimFindContour(RobotParams, NRobot, SensorRange, DesiredValue)
 %   SwarmSimFindContour takes the inputs of RobotParams, NRobot, and Sensor
 %   Range and outputs the resultant velocity. Individual velocity of robot
 %   is determined by comparing "Sensor Value" to surrounding robots and
@@ -42,7 +42,7 @@ for i=1:N
     x(i)=RobotParams(i*4-3);
     y(i)=RobotParams(i*4-2);
     theta(i)=RobotParams(i*4-1);
-    SensorValue(i)=RobotParams(i);
+    SensorValue(i)=RobotParams(i*4);
 end
 
 %% Find Min/Max
@@ -52,8 +52,8 @@ for i=1:N
     d(i) = sqrt(abs(x(NRobot)-x(i))^2+abs(y(NRobot)-y(i))^2);
     O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
     
-    d_contour1 = abs(readScalarField(x(i),y(i),ScalarFieldSelection) - DesiredValue) ;
-    d_contour2 = abs(readScalarField(x(NRobot),y(NRobot),ScalarFieldSelection) - DesiredValue);
+    d_contour1 = abs(SensorValue(i) - DesiredValue) ;
+    d_contour2 = abs(SensorValue(NRobot) - DesiredValue);
     amp_from_contour=d_contour1-d_contour2;
     amp(i)= 10*(amp_from_contour);
     
