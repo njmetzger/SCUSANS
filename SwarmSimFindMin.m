@@ -1,4 +1,4 @@
-function [Vf] = SwarmSimFindMin(RobotParams, NRobot, SensorRange)
+function [Vf] = SwarmSimFindMin(RobotParams, NRobot, SensorRange,ScalarFieldSelection)
 %SwarmSimFindMin Find Min behavior called in Find Min block of Swarm_Robot_Base
 %   SwarmSimFindMin takes the inputs of RobotParams, NRobot, and Sensor
 %   Range and outputs the resultant velocity. Individual velocity of robot
@@ -52,7 +52,7 @@ end
 for i=1:N 
     d(i) = sqrt(abs(x(NRobot)-x(i))^2+abs(y(NRobot)-y(i))^2);
     O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-    amp(i)=(readScalarField(x(i),y(i))-readScalarField(x(NRobot),y(NRobot)));
+    amp(i)=(readScalarField(x(i),y(i),ScalarFieldSelection)-readScalarField(x(NRobot),y(NRobot),ScalarFieldSelection));
 end
 
 % max_idx=find(robotAmp==max(robotAmp));

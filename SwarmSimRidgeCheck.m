@@ -1,4 +1,4 @@
-function [ridgeState, Vfx, Vfy] = SwarmSimRidgeCheck(RobotParams, NRobot, SensorRange)
+function [ridgeState, Vfx, Vfy] = SwarmSimRidgeCheck(RobotParams, NRobot, SensorRange,ScalarFieldSelection)
 % SWARMSIMCHECKRIDGE - <Determines....>
 
 % Outputs:
@@ -11,6 +11,7 @@ function [ridgeState, Vfx, Vfy] = SwarmSimRidgeCheck(RobotParams, NRobot, Sensor
 
 % Determine number of robots based off length of robot params vector 
 N= floor(length(RobotParams)/4); 
+N
 
 %% initialize variables 
 % position variables for 3-DOF omnibot are x,y,and theta (rotation about z-axis)
