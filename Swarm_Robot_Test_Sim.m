@@ -1,16 +1,10 @@
-function Swarm_Robot_Test_Sim(Num_Robots,Sim_Time,Sense_Range, AvoidanceRange,DesValue,CONTOUR_BUFFER,ScalarFieldSelection,behavior,x_init,y_init,radius_init)
+function Swarm_Robot_Test_Sim(NUM_ROBOTS,Sim_Time,Sense_Range,AvoidanceRange,...
+    DesValue,CONTOUR_BUFFER,ScalarFieldSelection,behavior,x_init,y_init,...
+    radius_init,isExp, robots,base)
 % SWARM_ROBOT_TEST_SIM - < Setup and initialization utility for running the
 % swarm simulator.>
 
 % Simulation parameters
-isExp= false;
-if isExp
-    robots = [string('redwood'),string('pacific-blue'),string('celeste')];
-    NUM_ROBOTS = length(robots);
-else
-    NUM_ROBOTS=Num_Robots;
-    robots = [];
-end
 SIM_TIME=Sim_Time;
 
 SensorRange=Sense_Range;
@@ -38,14 +32,11 @@ else
 end
 
 % Create system with that number of robots
-[h_newsys , simName] = buildSimModel(NUM_ROBOTS,SIM_TIME, FIELD_WIDTH, SensorRange, AvoidRange, DesiredValue,CONTOUR_BUFFER,ScalarFieldSelection,x_init,y_init,radius_init,isExp,robots);
+[h_newsys , simName] = buildSimModel(NUM_ROBOTS,SIM_TIME, FIELD_WIDTH, SensorRange, AvoidRange, DesiredValue,CONTOUR_BUFFER,ScalarFieldSelection,x_init,y_init,radius_init,isExp,robots,base);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Group Robot Behavior Control
-for i=1:NUM_ROBOTS
-    set_param(['Swarm_Robot_N/Command ',num2str(i)],'Value', '1');
-end
 
 %Runs Simulation, must be the name of the simulink file without the .slx
 %extention
@@ -173,7 +164,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% buildSimModel()
-function [h_newsys , simName] = buildSimModel(N, SIM_TIME, FIELD_WIDTH, SensorRange, AvoidRange, DesiredValue, CONTOUR_BUFFER,ScalarFieldSelection,x_init,y_init,radius_init,isExp,robots)
+function [h_newsys , simName] = buildSimModel(N, SIM_TIME, FIELD_WIDTH, SensorRange, AvoidRange, DesiredValue, CONTOUR_BUFFER,ScalarFieldSelection,x_init,y_init,radius_init,isExp,robots,base)
 % Script for generating simulink model for N robots
 
 % Define system name
@@ -192,14 +183,14 @@ h_newsys = new_system('Swarm_Robot_N');
 open_system(h_newsys);
 
 % Load the template "Robot Behavior" model
-load_system('Swarm_Robot_Base_2018b')
+load_system(base)
 
 % Set base robot parameters
-set_param('Swarm_Robot_Base_2018b/Robot 1 Behavior/Sensor Range','Value',num2str(SensorRange));
-set_param('Swarm_Robot_Base_2018b/Robot 1 Behavior/Avoid Range','Value',num2str(AvoidRange));
-set_param('Swarm_Robot_Base_2018b/Robot 1 Behavior/Desired Value','Value',num2str(DesiredValue));
-set_param('Swarm_Robot_Base_2018b/Robot 1 Behavior/Contour Buffer', 'Value',num2str(CONTOUR_BUFFER));
-set_param('Swarm_Robot_Base_2018b/Robot 1 SimResponse/ScalarFieldSelection','Value',num2str(ScalarFieldSelection));
+set_param(strcat(base,'/Robot 1 Behavior/Sensor Range'),'Value',num2str(SensorRange));
+set_param(strcat(base,'/Robot 1 Behavior/Avoid Range'),'Value',num2str(AvoidRange));
+set_param(strcat(base,'/Robot 1 Behavior/Desired Value'),'Value',num2str(DesiredValue));
+set_param(strcat(base,'/Robot 1 Behavior/Contour Buffer'), 'Value',num2str(CONTOUR_BUFFER));
+set_param(strcat(base,'/Robot 1 SimResponse/ScalarFieldSelection'),'Value',num2str(ScalarFieldSelection));
 
 % Construct total system of N robots and link blocks
 if isExp
@@ -212,8 +203,8 @@ if isExp
         end
     end
     rs = rs + '}';
-    add_block('Swarm_Robot_Base_2018b/Loop_Pacer', 'Swarm_Robot_N/Loop_Pacer')
-    add_block('Swarm_Robot_Base_2018b/Optitrack', 'Swarm_Robot_N/Optitrack')
+    add_block(strcat(base,'/Loop_Pacer'), 'Swarm_Robot_N/Loop_Pacer')
+    add_block(strcat(base,'/Optitrack'), 'Swarm_Robot_N/Optitrack')
     set_param('Swarm_Robot_N/Optitrack', 'rigidBodyNames', rs)
     OT_handles= get_param('Swarm_Robot_N/Optitrack', 'PortHandles');
 end
@@ -221,14 +212,14 @@ for i=1:N
     %% Add blocks for experiment if needed
     if isExp
         %Create Signal Reshape for each robot
-        base_model_SR = 'Swarm_Robot_Base_2018b/Signal_Reshape';
+        base_model_SR = strcat(base,'/Signal_Reshape');
         new_model_SR = sprintf('Swarm_Robot_N/Signal_Reshape_%d',i);
         addBlockAndSpace(base_model_SR, new_model_SR,vert_spacing,0,i )
         RS_handles= get_param(new_model_SR, 'PortHandles');
         add_line('Swarm_Robot_N',OT_handles.Outport(i),RS_handles.Inport(1));
 
         %Create Signal Selector for each robot
-        base_model_ss = 'Swarm_Robot_Base_2018b/Signal_Select';
+        base_model_ss = strcat(base,'/Signal_Select');
         new_model_ss = sprintf('Swarm_Robot_N/Signal_Select_%d',i);
         addBlockAndSpace(base_model_ss, new_model_ss,vert_spacing,0,i)
         SS_handles{i}= get_param(new_model_ss, 'PortHandles');
@@ -237,7 +228,7 @@ for i=1:N
 
 
     %% Create new "Robot X Behavior" block
-    base_model='Swarm_Robot_Base_2018b/Robot 1 Behavior';
+    base_model=strcat(base,'/Robot 1 Behavior');
     behavior_model=sprintf('Swarm_Robot_N/Robot %i Behavior',i)
     addBlockAndSpace(base_model, behavior_model,vert_spacing, 0, i )
 
@@ -245,7 +236,7 @@ for i=1:N
 
     %% Create new "Robot X Response" block
     if isExp
-        base_model='Swarm_Robot_Base_2018b/Robot 1 ExpResponse';
+        base_model=strcat(base,'/Robot 1 ExpResponse');
         response_model=sprintf('Swarm_Robot_N/Robot %i ExpResponse',i);
         addBlockAndSpace(base_model, response_model,vert_spacing, 0, i )
 
@@ -253,7 +244,7 @@ for i=1:N
         add_line('Swarm_Robot_N', SS_handles{i}.Outport(1), b_behavior{i}.Inport(2));
         pos=get_param(response_model,'position');
     else
-        base_model='Swarm_Robot_Base_2018b/Robot 1 SimResponse';
+        base_model=strcat(base,'/Robot 1 SimResponse');
         response_model=sprintf('Swarm_Robot_N/Robot %i SimResponse',i);
         addBlockAndSpace(base_model, response_model,vert_spacing, 0, i )
 
@@ -263,7 +254,7 @@ for i=1:N
     end
 
     %% Create new "Robot X" (robot num) source block
-    base_model='Swarm_Robot_Base_2018b/Robot 1';
+    base_model=strcat(base,'/Robot 1');
     new_model=sprintf('Swarm_Robot_N/Robot %i',i)
     addBlockAndSpace(base_model, new_model,vert_spacing, 0, i )
 
@@ -276,7 +267,7 @@ for i=1:N
 
 
     %% Create new "Command X" source block
-    base_model='Swarm_Robot_Base_2018b/Command 1';
+    base_model=strcat(base,'/Command 1');
     new_model=sprintf('Swarm_Robot_N/Command %i',i);
     addBlockAndSpace(base_model, new_model,vert_spacing, 0, i )
 
