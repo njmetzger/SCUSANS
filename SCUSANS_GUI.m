@@ -133,17 +133,11 @@ function cbox_Pacific_Blue_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of cbox_Pacific_Blue
-
-
 % --- Executes on button press in cbox_Canary.
 function cbox_Canary_Callback(hObject, eventdata, handles)
 % hObject    handle to cbox_Canary (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of cbox_Canary
-
 
 % --- Executes on button press in cbox_Sunglow.
 function cbox_Sunglow_Callback(hObject, eventdata, handles)
@@ -151,17 +145,11 @@ function cbox_Sunglow_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of cbox_Sunglow
-
-
 % --- Executes on button press in cbox_Schwein.
 function cbox_Schwein_Callback(hObject, eventdata, handles)
 % hObject    handle to cbox_Schwein (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of cbox_Schwein
-
 
 % --- Executes on button press in cbox_Redwood.
 function cbox_Redwood_Callback(hObject, eventdata, handles)
@@ -169,17 +157,11 @@ function cbox_Redwood_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of cbox_Redwood
-
-
 % --- Executes on button press in cbox_Watermelon.
 function cbox_Watermelon_Callback(hObject, eventdata, handles)
 % hObject    handle to cbox_Watermelon (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of cbox_Watermelon
-
 
 % --- Executes on button press in cbox_Tidal.
 function cbox_Tidal_Callback(hObject, eventdata, handles)
@@ -187,16 +169,11 @@ function cbox_Tidal_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of cbox_Tidal
-
-
 % --- Executes on button press in cbox_Wisteria.
 function cbox_Wisteria_Callback(hObject, eventdata, handles)
 % hObject    handle to cbox_Wisteria (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of cbox_Wisteria
 
 % --- Executes on button press in SetBehaviors_PB.
 
@@ -273,10 +250,6 @@ function SensorRange_edit_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of SensorRange_edit as text
-%        str2double(get(hObject,'String')) returns contents of SensorRange_edit as a double
-
-
 % --- Executes during object creation, after setting all properties.
 function SensorRange_edit_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to SensorRange_edit (see GCBO)
@@ -289,16 +262,10 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function AvoidanceRange_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to AvoidanceRange_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of AvoidanceRange_edit as text
-%        str2double(get(hObject,'String')) returns contents of AvoidanceRange_edit as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function AvoidanceRange_edit_CreateFcn(hObject, eventdata, handles)
@@ -312,16 +279,10 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function DesiredContour_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to DesiredContour_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of DesiredContour_edit as text
-%        str2double(get(hObject,'String')) returns contents of DesiredContour_edit as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function DesiredContour_edit_CreateFcn(hObject, eventdata, handles)
@@ -334,7 +295,6 @@ function DesiredContour_edit_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 % --- Executes on button press in runSim_PB.
 function runSim_PB_Callback(hObject, eventdata, handles)
@@ -398,11 +358,11 @@ elseif handles.singSource_RB.Value
     ScalarFieldSelection = 2;
 elseif handles.singSink_RB.Value
     ScalarFieldSelection = 3;
+elseif handles.tbSink_RB.Value
+    ScalarFieldSelection = 4;
 else
     disp('No Value Selected')
 end 
-
-disp('testing handles')
 
 if handles.SelectSimRB.Value
     disp('sim')
@@ -420,23 +380,17 @@ elseif handles.SelectTestbedRB.Value
         handles.cbox_Pacific_Blue.Value,handles.cbox_Pink.Value, ...
         handles.cbox_Redwood.Value, handles.cbox_Schwein.Value,...
         handles.cbox_Sunglow.Value,handles.cbox_Tidal.Value,...
-        handles.cbox_Watermelon.Value,handles.cbox_Wisteria.Value]
+        handles.cbox_Watermelon.Value,handles.cbox_Wisteria.Value];
     robots = all_robots(logical(robot_select));
     NUM_ROBOTS = length(robots);
 end
 % run simulation: 
 Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE,CONTOUR_BUFFER,ScalarFieldSelection,behavior,x_init_center,y_init_center,init_radius,isExp, robots,base) 
 
-
-
 function contourBuffer_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to contourBuffer_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of contourBuffer_edit as text
-%        str2double(get(hObject,'String')) returns contents of contourBuffer_edit as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function contourBuffer_edit_CreateFcn(hObject, eventdata, handles)
@@ -450,7 +404,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 % --- Executes on button press in prevScalarField_PB.
 function prevScalarField_PB_Callback(hObject, eventdata, handles)
 % hObject    handle to prevScalarField_PB (see GCBO)
@@ -461,72 +414,46 @@ if handles.compField_RB.Value
     ScalarFieldSelection = 1;
     % set field width to appropriate value for the desired field:
     FIELD_WIDTH= 300;
-    % use the same plotting logic as is used in Swarm_Robot_Test_Sim
-    figure()
-    ax=gca;
-    ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
-    ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
-    %cmap = hsv(N);
-    res=100;
-    xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
-    ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
-    [X,Y] = meshgrid(xdivs,ydivs);
-    Z=readScalarField(X,Y,ScalarFieldSelection);
-    surf(X,Y,Z);
-    title('Composite Scalar Field: Field Width= 300, Suggested Robot Speed= 90')
-    view([0 90])
+    p_title ='Composite Scalar Field: Field Width= 300, Suggested Robot Speed= 90';
 elseif handles.singSource_RB.Value
     % set the scalarfieldselection to the corresponding desired value:
     ScalarFieldSelection = 2;
     % set field width to appropriate value for the desired field:
     FIELD_WIDTH= 300;   
-    % use the same plotting logic as is used in Swarm_Robot_Test_Sim
-    figure()
-    ax=gca;
-    ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
-    ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
-    %cmap = hsv(N);
-    res=100;
-    xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
-    ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
-    [X,Y] = meshgrid(xdivs,ydivs);
-    Z=readScalarFieldMulti(X,Y,ScalarFieldSelection);
-    surf(X,Y,Z);
-    title('Single Source: Field Width= 300, Suggested Robot Velocity= 90')
-    view([0 90])
+    p_title ='Single Source: Field Width= 300, Suggested Robot Velocity= 90';
 elseif handles.singSink_RB.Value
     % Set the scalarfieldselection to the corresponding desired value: 
     ScalarFieldSelection = 3;
     % set the field width to appropriate value for the desired field: 
     FIELD_WIDTH= 300;  
-    % use the same plotting logic as is used in Swarm_Robot_Test_Sim
-    figure()
-    ax=gca;
-    ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
-    ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
-    %cmap = hsv(N);
-    res=100;
-    xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
-    ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
-    [X,Y] = meshgrid(xdivs,ydivs);
-    Z=readScalarFieldMulti(X,Y,ScalarFieldSelection);
-    surf(X,Y,Z);
-    title('Single Sink: Field Width= 300, Suggested Robot Velocity= 90')
-    view([0 90])
+    p_title = 'Single Sink: Field Width= 300, Suggested Robot Velocity= 90';
+elseif handles.tbSink_RB.Value
+    % Set the scalarfieldselection to the corresponding desired value: 
+    ScalarFieldSelection = 4;
+    % set the field width to appropriate value for the desired field: 
+    FIELD_WIDTH= 5;  
+    p_title = 'Testbed Single Sink: Field Width= 5, Suggested Robot Velocity= 0.5';
 else
     disp('No Value Selected')
 end
-
-
+figure()
+ax=gca;
+ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
+ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
+%cmap = hsv(N);
+res=100;
+xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
+ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
+[X,Y] = meshgrid(xdivs,ydivs);
+Z=readScalarField(X,Y,ScalarFieldSelection);
+surf(X,Y,Z);
+title(p_title)
+view([0 90])
 
 function robSpeed_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to robSpeed_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of robSpeed_edit as text
-%        str2double(get(hObject,'String')) returns contents of robSpeed_edit as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function robSpeed_edit_CreateFcn(hObject, eventdata, handles)
@@ -540,16 +467,10 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function initCond_radius_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to initCond_radius_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of initCond_radius_edit as text
-%        str2double(get(hObject,'String')) returns contents of initCond_radius_edit as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function initCond_radius_edit_CreateFcn(hObject, eventdata, handles)
@@ -563,16 +484,10 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function initCond_centerX_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to initCond_centerX_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of initCond_centerX_edit as text
-%        str2double(get(hObject,'String')) returns contents of initCond_centerX_edit as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function initCond_centerX_edit_CreateFcn(hObject, eventdata, handles)
@@ -586,16 +501,12 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function initCond_centerY_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to initCond_centerY_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hints: get(hObject,'String') returns contents of initCond_centerY_edit as text
 %        str2double(get(hObject,'String')) returns contents of initCond_centerY_edit as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function initCond_centerY_edit_CreateFcn(hObject, eventdata, handles)
@@ -609,7 +520,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 % --- Executes on button press in SelectSimRB.
 function SelectSimRB_Callback(hObject, eventdata, handles)
 % hObject    handle to SelectSimRB (see GCBO)
@@ -622,7 +532,6 @@ if handles.SelectSimRB.Value
     set(handles.numRobots_edit,'Enable','on')
     set(handles.MLVersion_box,'Visible','on')
 end
-
 
 % --- Executes on button press in SelectTestbedRB.
 function SelectTestbedRB_Callback(hObject, eventdata, handles)

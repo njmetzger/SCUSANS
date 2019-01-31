@@ -10,11 +10,14 @@ SIM_TIME=Sim_Time;
 SensorRange=Sense_Range;
 AvoidRange= AvoidanceRange;
 DesiredValue=DesValue;
-SCALAR_FIELD= ScalarFieldSelection
 
 % Constants
 NUM_SIGNALS_PER_ROBOT=4;
-FIELD_WIDTH=300;
+if ScalarFieldSelection == 4
+    FIELD_WIDTH=5;
+else 
+    FIELD_WIDTH=300;
+end
 
 VideoFilename='findContour_12_6';
 
@@ -43,9 +46,6 @@ end
 
 % profile on
 
-% Setup waitbar
-%h = waitbar(0,'Please wait...');
-
 % Specify sim options and run simulation
 % myoptions = simset('SrcWorkspace','current','DstWorkspace','current');
 if isExp
@@ -56,9 +56,6 @@ else
     sim('Swarm_Robot_N',SIM_TIME,myoptions)
 end
 simOut.simout=simout;
-
-% Close waitbar
-% close(h)
 
 est_num_robots=size(simOut.simout.Data,2)/NUM_SIGNALS_PER_ROBOT;
 
@@ -154,7 +151,7 @@ close(v)
 time=simOut.simout.time;
 
 %% Plot time history of robots
-plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,behavior);
+plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,behavior,Z);
 
 end
 
@@ -266,18 +263,7 @@ for i=1:N
     add_line('Swarm_Robot_N',h_robot_num{i}.Outport(1),h_behavior{i}.Inport(2));
 
 
-    %% Create new "Command X" source block
-    base_model=strcat(base,'/Command 1');
-    new_model=sprintf('Swarm_Robot_N/Command %i',i);
-    addBlockAndSpace(base_model, new_model,vert_spacing, 0, i )
-
-    set_param(new_model,'Value',get_param(base_model,'Value'));
-
-    h_command{i} = get_param(new_model,'PortHandles');
-
-    % Connect robot num to behavior block
-    add_line('Swarm_Robot_N',h_command{i}.Outport(1),h_behavior{i}.Inport(3));
-
+    %% Connect communication blocks 
     % Connect robot behavior block to robot response block
     add_line('Swarm_Robot_N', h_behavior{i}.Outport(1), b_behavior{i}.Inport(1));
 
@@ -335,74 +321,66 @@ add_line('Swarm_Robot_N',h_mux.Outport(1),h_simout.Inport(1),'autorouting','on')
 
 % set_param('Swarm_Robot_N/SimOut_Data','SaveFormat','Structure With Time')
 
-% %% Add a waitbar system
-% load_system('waitbar_system')
-%
-% add_block('waitbar_system/Waitbar_Timer','Swarm_Robot_N/Waitbar_Timer');
-% set_param('waitbar_system/Waitbar_Timer/End_Time','Value',num2str(SIM_TIME));
-
 %% Define robot initial conditions
-answer = questdlg('Select initial condition option?', ...
-    'Initial Condition Options', ...
-    'Use Default','Set to Random','Select Manually','Use Default');
-% Handle response
-switch answer
-    case 'Use Default'
-        disp('Using default initial conditions. NOTE: Currently defaulting to RANDOM')
-        % set initial conditions as center point and circle:
-        center_point_x= x_init;
-        center_point_y= y_init;
-        radius_circle= radius_init; 
-        theta_offset= 2*pi/N;
-        for i= 1:N
-            x(i) = center_point_x + radius_circle*cos(i*theta_offset);
-            y(i)= center_point_y + radius_circle*sin(i*theta_offset);
-            initialCondition{i}=sprintf('[%g %g 0]',x(i),y(i));
-            set_param(['Swarm_Robot_N/Robot ',num2str(i),' Behavior/Initial Conditions'],'Value',initialCondition{i})
-        end
-        
-    case 'Set to Random'
-        disp('Setting initial conditions to random location on interval')
-        
-        for i=1:N
-            rand_width=FIELD_WIDTH*.9;
-            x(i)=rand(1)*(2*rand_width)-rand_width;
-            y(i)=rand(1)*(2*rand_width)-rand_width;
-            if ~isExp
+if ~isExp
+    answer = questdlg('Select initial condition option?', ...
+        'Initial Condition Options', ...
+        'Use Default','Set to Random','Select Manually','Use Default');
+    % Handle response
+    switch answer
+        case 'Use Default'
+            disp('Using default initial conditions. NOTE: Currently defaulting to RANDOM')
+            % set initial conditions as center point and circle:
+            center_point_x= x_init;
+            center_point_y= y_init;
+            radius_circle= radius_init; 
+            theta_offset= 2*pi/N;
+            for i= 1:N
+                x(i) = center_point_x + radius_circle*cos(i*theta_offset);
+                y(i)= center_point_y + radius_circle*sin(i*theta_offset);
                 initialCondition{i}=sprintf('[%g %g 0]',x(i),y(i));
                 set_param(['Swarm_Robot_N/Robot ',num2str(i),' SimResponse/Initial Conditions'],'Value',initialCondition{i})
             end
-        end
-    case 'Select Manually'
-        disp('Opening GUI interface for selection')
-        fig=figure
-        
-        % First plot scalar field
-        ax=gca;
-        ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
-        ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
-        cmap = hsv(N);
-        title('Click to select robot initial positions')
-        
-        res=100;
-        xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
-        ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
-        [X,Y] = meshgrid(xdivs,ydivs);
-        Z=readScalarField(X,Y,ScalarFieldSelection);
-        surf(X,Y,Z);
-        view([0 90])
-        hold on
-        
-        for i=1:N
-            [x(i),y(i)] = ginput(1)
-            z(i)=readScalarField(x(i),y(i),ScalarFieldSelection);
-            plot3(x(i),y(i),z(i)+abs(z(i)*.2),'o','MarkerSize',10,'MarkerFaceColor',cmap(i,:),'MarkerEdgeColor','k')
-            if ~isExp
+
+        case 'Set to Random'
+            disp('Setting initial conditions to random location on interval')
+
+            for i=1:N
+                rand_width=FIELD_WIDTH*.9;
+                x(i)=rand(1)*(2*rand_width)-rand_width;
+                y(i)=rand(1)*(2*rand_width)-rand_width;
                 initialCondition{i}=sprintf('[%g %g 0]',x(i),y(i));
                 set_param(['Swarm_Robot_N/Robot ',num2str(i),' SimResponse/Initial Conditions'],'Value',initialCondition{i})
             end
-        end
-        close(fig);
+        case 'Select Manually'
+            disp('Opening GUI interface for selection')
+            fig=figure
+
+            % First plot scalar field
+            ax=gca;
+            ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
+            ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
+            cmap = hsv(N);
+            title('Click to select robot initial positions')
+
+            res=100;
+            xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
+            ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
+            [X,Y] = meshgrid(xdivs,ydivs);
+            Z=readScalarField(X,Y,ScalarFieldSelection);
+            surf(X,Y,Z);
+            view([0 90])
+            hold on
+
+            for i=1:N
+                [x(i),y(i)] = ginput(1)
+                z(i)=readScalarField(x(i),y(i),ScalarFieldSelection);
+                plot3(x(i),y(i),z(i)+abs(z(i)*.2),'o','MarkerSize',10,'MarkerFaceColor',cmap(i,:),'MarkerEdgeColor','k')
+                initialCondition{i}=sprintf('[%g %g 0]',x(i),y(i));
+                set_param(['Swarm_Robot_N/Robot ',num2str(i),' SimResponse/Initial Conditions'],'Value',initialCondition{i})
+            end
+            close(fig);
+    end
 end
 
 
@@ -410,7 +388,7 @@ end
 
 %% plotRobotHistory()
 
-function [] = plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,behavior)
+function [] = plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,behavior,Z)
 
 % assignin('base','base_RobotData', Robot_Data)
 x_PI= zeros(length(Robot_Data(1).x),NUM_ROBOTS);
@@ -444,10 +422,8 @@ end
 % min/max finding behavior:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%following lines only valid when using the ridge/trench plot from
-%Kitts,McDonald, and Neumann paper on cluster adaptive nav primitives:
-global_max_val= 69.15*ones(length(time),1);
-global_min_val= -29.5*ones(length(time),1);
+global_max_val= max(max(Z))*ones(length(time),1);
+global_min_val= min(min(Z))*ones(length(time),1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 desired_contour_plot= DesValue*ones(length(time),1);
