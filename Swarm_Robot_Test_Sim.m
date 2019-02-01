@@ -151,7 +151,7 @@ close(v)
 time=simOut.simout.time;
 
 %% Plot time history of robots
-plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,behavior,Z);
+plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,behavior,X,Y,Z);
 
 end
 
@@ -388,7 +388,7 @@ end
 
 %% plotRobotHistory()
 
-function [] = plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,behavior,Z)
+function [] = plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,behavior,X,Y,Z)
 
 % assignin('base','base_RobotData', Robot_Data)
 x_PI= zeros(length(Robot_Data(1).x),NUM_ROBOTS);
@@ -504,10 +504,11 @@ for i=1:NUM_ROBOTS
     leg_str1= 'Robot Number  ';
     rob_num_legend= num2str(i);
     %legend_label= strcat(leg_str1, rob_num_legend);
-    plot(Robot_Data(i).x, Robot_Data(i).y);
+    plot3(Robot_Data(i).x, Robot_Data(i).y,Robot_Data(i).sensor_value,'LineWidth',2);
     title ('Time History of Robot positions')
 end
-
+contour3(X,Y,Z,'ShowText','on')
+%surf(X,Y,Z)
 hold off
 end
 
