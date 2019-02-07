@@ -47,8 +47,8 @@ V_mag =sqrt(Vx^2 + Vy^2);
 Vfx = Vx(1)/V_mag;
 Vfy = Vy(1)/V_mag;
 % Convert the sums into a vector that is then passed to the robot:
-Vf(1)= Vfx; 
-Vf(2)= Vfy; 
+Vf(1)= Vfx;
+Vf(2)= Vfy;
 Vf(3)= Vft;
 
 end

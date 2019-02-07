@@ -22,7 +22,7 @@ function varargout = SCUSANS_GUI(varargin)
 
 % Edit the above text to modify the response to help SCUSANS_GUI
 
-% Last Modified by GUIDE v2.5 16-Jan-2019 12:00:45
+% Last Modified by GUIDE v2.5 07-Feb-2019 12:21:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -310,6 +310,7 @@ set_param(strcat(base,'/Robot 1 Behavior/FindMin_Switch'),'sw',num2str(handles.c
 set_param(strcat(base,'/Robot 1 Behavior/FindMax_Switch'),'sw',num2str(handles.cbox_FindMax.Value))
 set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
 set_param(strcat(base,'/Robot 1 Behavior/FollowRidge_Switch'),'sw',num2str(handles.cbox_RidgeFollow.Value))
+set_param(strcat(base,'/Robot 1 Behavior/GoTo_Switch'),'sw',num2str(handles.cbox_GoTo.Value))
 
 % set behavior switch used to plot time histories of robots: 
 if handles.cbox_FindMin.Value && handles.cbox_FindMax.Value 
@@ -338,14 +339,17 @@ DESIRED_VALUE= str2double(handles.DesiredContour_edit.String);
 CONTOUR_BUFFER= str2double(handles.contourBuffer_edit.String);
 % ROBOT_SPEED= str2double(handles.robSpeed_edit.String); 
 
-x_init_center= str2double(handles.initCond_centerX_edit.String) 
-y_init_center= str2double(handles.initCond_centerY_edit.String) 
-init_radius= str2double(handles.initCond_radius_edit.String) 
+x_init_center= str2double(handles.initCond_centerX_edit.String); 
+y_init_center= str2double(handles.initCond_centerY_edit.String); 
+init_radius= str2double(handles.initCond_radius_edit.String); 
+GoTo_Coords = [str2double(handles.goTo_X_Coord_edit.String), str2double(handles.goTo_X_Coord_edit.String)]; 
 
 %because robot_speed is not a parameter used inside swarm_robot_test_sim,
 %update robot speed here:
 
 set_param(strcat(base,'/Robot 1 Behavior/Robot Speed'),'value', handles.robSpeed_edit.String);
+set_param(strcat(base,'/Robot 1 Behavior/GoTo_X'),'value',handles.goTo_X_Coord_edit.String);
+set_param(strcat(base,'/Robot 1 Behavior/GoTo_Y'),'value',handles.goTo_Y_Coord_edit.String);
 
 % determine Scalar Field to use based off the radio button group: 
 % To add a scalar field, make sure that it is added in three places: 
@@ -574,3 +578,58 @@ function [base] = handleVersion(handles)
         end 
     end
     open(strcat(base,'.slx'))
+
+
+% --- Executes on button press in cbox_GoTo.
+function cbox_GoTo_Callback(hObject, eventdata, handles)
+% hObject    handle to cbox_GoTo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of cbox_GoTo
+
+
+
+function goTo_X_Coord_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to goTo_X_Coord_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of goTo_X_Coord_edit as text
+%        str2double(get(hObject,'String')) returns contents of goTo_X_Coord_edit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function goTo_X_Coord_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to goTo_X_Coord_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function goTo_Y_Coord_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to goTo_Y_Coord_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of goTo_Y_Coord_edit as text
+%        str2double(get(hObject,'String')) returns contents of goTo_Y_Coord_edit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function goTo_Y_Coord_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to goTo_Y_Coord_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

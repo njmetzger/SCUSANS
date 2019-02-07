@@ -128,7 +128,7 @@ for i=1:size(simOut.simout.Data,1)-1
     for k=1:NUM_ROBOTS
         addpoints(h_line(k),Robot_Data(k).x(i),Robot_Data(k).y(i),(Robot_Data(k).sensor_value(i)+50));  % can we add in the z-value to the plot here?
     end
-    
+    title(strcat('Time = ',  num2str(time(i))))
     drawnow limitrate
     % pause(dt(i));
     F(i) = getframe(gcf);
@@ -329,7 +329,7 @@ if ~isExp
     % Handle response
     switch answer
         case 'Use Default'
-            disp('Using default initial conditions. NOTE: Currently defaulting to RANDOM')
+            disp('Using default initial conditions.')
             % set initial conditions as center point and circle:
             center_point_x= x_init;
             center_point_y= y_init;
@@ -453,6 +453,8 @@ switch behavior
         plot(time,desired_contour_plot,'k--');  % plot contour value
         plot(time,positive_buffer_plot,'k-.');
         plot(time,negative_buffer_plot,'k-.'); legend(legend_labels);
+        xlabel('Time (s)')
+        ylabel('Sensor Value')
         hold off
         
         
@@ -475,7 +477,8 @@ switch behavior
         % add reference for global min:
         legend_labels{1,(NUM_ROBOTS+1)}= 'Known Global Minimum';
         plot(time,global_min_val,'k--'); legend(legend_labels) ;% plot minimum value
-        
+        xlabel('Time (s)')
+        ylabel('Sensor Value')
     case 'Find Max'
         % plot the individual robot concentrations:
         figure()
@@ -490,6 +493,8 @@ switch behavior
         % add reference for global max:
         legend_labels{1,(NUM_ROBOTS+1)}= 'Known Global Maximum';
         plot(time,global_max_val,'k--'); legend(legend_labels); % plot maximum value
+        xlabel('Time (s)')
+        ylabel('Sensor Value')
         
     case 'Incompatible'
         disp('You have selected an incompatible pair of behaviors, such as selecting multiple of the FindMin/FindMax/FindContour behaviors. Plots could not be generated.')
@@ -505,10 +510,11 @@ for i=1:NUM_ROBOTS
     rob_num_legend= num2str(i);
     %legend_label= strcat(leg_str1, rob_num_legend);
     plot3(Robot_Data(i).x, Robot_Data(i).y,Robot_Data(i).sensor_value,'LineWidth',2);
-    title ('Time History of Robot positions')
 end
-contour3(X,Y,Z,'ShowText','on')
+contour3(X,Y,Z)
+view(-45,45)
 %surf(X,Y,Z)
+title ('Time History of Robot positions'), xlabel('X (m)'), ylabel('Y (m)'),zlabel('Sensor Value')
 hold off
 end
 
