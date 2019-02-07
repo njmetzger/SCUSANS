@@ -1,4 +1,4 @@
-function [Vf] = SwarmSimDisperse(RobotParams, NRobot, SensorRange)
+function [Vf] = SwarmSimDisperse(RobotParams, NRobot, SensorRange, RobotSpeed)
 %SwarmSimDisperse Disperse behavior for Swarm_Adaptive_Navigation_Simulator.slx
 %   LATEST UPDATE: 09/04/2018 by NJM 
 % This disperse behavior is called by the Robot # behavior blocks in
@@ -50,14 +50,17 @@ for i=1:N
 end
 
 %% Disperse Behavior 
- 
+
+% Define robot constant velocity - This should be added as an arguement
+% later
+V_const=RobotSpeed; 
 
 % Determine distance and angle to each robot 
 for i=1:N 
     d(i) = ( ( x(NRobot)-x(i) )^2 + ( y(NRobot)-y(i) )^2 )^(0.5);
     O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-    Vx(i)= cos(O(i));
-    Vy(i)= sin(O(i));
+    Vx(i)= V_const*cos(O(i));
+    Vy(i)= V_const*sin(O(i));
 end
 
 % If robot is within sensor range of  Nrobot, it is attracted to that

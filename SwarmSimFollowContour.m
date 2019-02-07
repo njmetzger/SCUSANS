@@ -1,4 +1,4 @@
-function [Vf] = SwarmSimFollowContour(RobotParams, NRobot, SensorRange, DesiredValue)
+function [Vf] = SwarmSimFollowContour(RobotParams, NRobot, SensorRange, DesiredValue,ScalarFieldSelection)
 % SWARMSIMFOLLOWCONTOUR - <Attractive function to create contour following behavior>
 
 % Description:
@@ -33,16 +33,17 @@ for i=1:N
     x(i)=RobotParams(i*4-3);
     y(i)=RobotParams(i*4-2);
     theta(i)=RobotParams(i*4-1);
-    SensorValue(i)=RobotParams(i*4);
+    SensorValue(i)=RobotParams(i);
 end
 
 %% Find Min/Max
+V_const=3; 
 
 % Determine distance and angle to each robot 
 for i=1:N 
     d(i) = sqrt(abs(x(NRobot)-x(i))^2+abs(y(NRobot)-y(i))^2);
     O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-    amp(i)=(SensorValue(i)-SensorValue(NRobot));
+    amp(i)=(readScalarField(x(i),y(i),ScalarFieldSelection)-readScalarField(x(NRobot),y(NRobot),ScalarFieldSelection));
 end
 
 % max_idx=find(robotAmp==max(robotAmp));

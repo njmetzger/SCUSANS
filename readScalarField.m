@@ -22,7 +22,7 @@ ypos=0;
 
 
 %% Field equation from cluster robot paper
-if ScalarFieldSelection == 1
+% if ScalarFieldSelection == 1
     % persistent m1_height m1_rolloff x1_m y1_m
     
     m1_height=50;
@@ -86,33 +86,25 @@ if ScalarFieldSelection == 1
     
     
     scalarFunction= @(x,y) M1(x,y) + M2(x,y)+M3(x,y) + R1(x,y) + R2(x,y) + T(x,y) ;
-    Z = scalarFunction(a,b);
-elseif ScalarFieldSelection == 2
-    m1_height=50;
-    m1_rolloff=.0001;
-    x2_m=215;
-    y2_m=150;
-    scalarFunction = @(x,y) m1_height./(m1_rolloff.*((x-x2_m).^2+(y-y2_m).^2)+1);
-    Z = scalarFunction(a,b);
-elseif ScalarFieldSelection == 3
-    m3_height=-25;
-    m3_rolloff=.0001;
-    x3_m=-100;
-    y3_m=-150;
-    scalarFunction = @(x,y) m3_height./(m3_rolloff.*((x-x3_m).^2+(y-y3_m).^2)+1);
-    Z = scalarFunction(a,b);
-elseif ScalarFieldSelection == 4
-    m4_height=5;
-    m4_rolloff=.015;
-    x4_m=0;
-    y4_m=0;
-    scalarFunction = @(x,y) m4_height.*(m4_rolloff.*((x-x4_m).^2+(y-y4_m).^2)+1);
-    Z = scalarFunction(a,b);
-else
-    scalarFunction = @(x,y) 0;
-    error(sprintf('Scalar Field Selection %d is not defined - check readScalarField.m',int32(ScalarFieldSelection)))
-end
+    
+% elseif ScalarFieldSelection == 2
+%     m1_height=50;
+%     m1_rolloff=.0001;
+%     x1_m=215;
+%     y1_m=150;
+%     scalarFunction = @(x,y) m1_height./(m1_rolloff.*((x-x1_m).^2+(y-y1_m).^2)+1);
+    
+% elseif ScalarFieldSelection == 3
+%     m3_height=-25;
+%     m3_rolloff=.0001;
+%     x3_m=-100;
+%     y3_m=-150;
+%     scalarFunction = @(x,y) m3_height./(m3_rolloff.*((x-x3_m).^2+(y-y3_m).^2)+1);
+% else
+%     disp('Scalar Field Selection is not defined - check readScalarField.m')
+% end
 
+Z = scalarFunction(a,b);
 
 % % Apply limit to avoid singularity at center of source
 % if z>maxValue

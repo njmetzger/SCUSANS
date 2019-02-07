@@ -22,7 +22,7 @@ function varargout = SCUSANS_GUI(varargin)
 
 % Edit the above text to modify the response to help SCUSANS_GUI
 
-% Last Modified by GUIDE v2.5 16-Jan-2019 12:00:45
+% Last Modified by GUIDE v2.5 24-Nov-2018 11:20:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -53,9 +53,11 @@ function SCUSANS_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for SCUSANS_GUI
 handles.output = hObject;
+
+%assignin('base', 'base_handles' , handles)
+open('Swarm_Robot_Base_2018a.slx') 
 % Update handles structure
 guidata(hObject, handles);
-set(handles.ExpRobotSelect,'Visible','off')
 
 % UIWAIT makes SCUSANS_GUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -111,84 +113,19 @@ function cbox_RidgeFollow_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% ROBOT NAME CHECKLIST CALLBACK FCNS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% --- Executes on button press in cbox_Pink.
-function cbox_Pink_Callback(hObject, eventdata, handles)
-% hObject    handle to cbox_Pink (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% --- Executes on button press in cbox_Celeste.
-function cbox_Celeste_Callback(hObject, eventdata, handles)
-% hObject    handle to cbox_Celeste (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% --- Executes on button press in cbox_Pacific_Blue.
-function cbox_Pacific_Blue_Callback(hObject, eventdata, handles)
-% hObject    handle to cbox_Pacific_Blue (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% --- Executes on button press in cbox_Canary.
-function cbox_Canary_Callback(hObject, eventdata, handles)
-% hObject    handle to cbox_Canary (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% --- Executes on button press in cbox_Sunglow.
-function cbox_Sunglow_Callback(hObject, eventdata, handles)
-% hObject    handle to cbox_Sunglow (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% --- Executes on button press in cbox_Schwein.
-function cbox_Schwein_Callback(hObject, eventdata, handles)
-% hObject    handle to cbox_Schwein (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% --- Executes on button press in cbox_Redwood.
-function cbox_Redwood_Callback(hObject, eventdata, handles)
-% hObject    handle to cbox_Redwood (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% --- Executes on button press in cbox_Watermelon.
-function cbox_Watermelon_Callback(hObject, eventdata, handles)
-% hObject    handle to cbox_Watermelon (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% --- Executes on button press in cbox_Tidal.
-function cbox_Tidal_Callback(hObject, eventdata, handles)
-% hObject    handle to cbox_Tidal (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% --- Executes on button press in cbox_Wisteria.
-function cbox_Wisteria_Callback(hObject, eventdata, handles)
-% hObject    handle to cbox_Wisteria (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
 % --- Executes on button press in SetBehaviors_PB.
-
 function SetBehaviors_PB_Callback(hObject, eventdata, handles)
     % On Set Behaviors push button press, behaviors in
-    % Swarm_Robot_Base_a are turned on/off based on paired checkboxes
-base = handleVersion(handles);
-
+    % Swarm_Robot_Base_2018a are turned on/off based on paired checkboxes 
+    
 % Attract= num2str(handles.cbox_Attract.Value)
-set_param(strcat(base,'/Robot 1 Behavior/Attract_Switch'),'sw',num2str(handles.cbox_Attract.Value))
-set_param(strcat(base,'/Robot 1 Behavior/Disperse_Switch'),'sw',num2str(handles.cbox_Disperse.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FindMin_Switch'),'sw',num2str(handles.cbox_FindMin.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FindMax_Switch'),'sw',num2str(handles.cbox_FindMax.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowRidge_Switch'),'sw',num2str(handles.cbox_RidgeFollow.Value))
+
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/Attract_Switch','sw',num2str(handles.cbox_Attract.Value))
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/Disperse_Switch','sw',num2str(handles.cbox_Disperse.Value))
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/FindMin_Switch','sw',num2str(handles.cbox_FindMin.Value))
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/FindMax_Switch','sw',num2str(handles.cbox_FindMax.Value))
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/FollowContour_Switch','sw',num2str(handles.cbox_ContourFollow.Value))
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/FollowRidge_Switch','sw',num2str(handles.cbox_RidgeFollow.Value))
 
 
 
@@ -250,6 +187,10 @@ function SensorRange_edit_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% Hints: get(hObject,'String') returns contents of SensorRange_edit as text
+%        str2double(get(hObject,'String')) returns contents of SensorRange_edit as a double
+
+
 % --- Executes during object creation, after setting all properties.
 function SensorRange_edit_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to SensorRange_edit (see GCBO)
@@ -262,10 +203,16 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+
+
 function AvoidanceRange_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to AvoidanceRange_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of AvoidanceRange_edit as text
+%        str2double(get(hObject,'String')) returns contents of AvoidanceRange_edit as a double
+
 
 % --- Executes during object creation, after setting all properties.
 function AvoidanceRange_edit_CreateFcn(hObject, eventdata, handles)
@@ -279,10 +226,16 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+
+
 function DesiredContour_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to DesiredContour_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of DesiredContour_edit as text
+%        str2double(get(hObject,'String')) returns contents of DesiredContour_edit as a double
+
 
 % --- Executes during object creation, after setting all properties.
 function DesiredContour_edit_CreateFcn(hObject, eventdata, handles)
@@ -296,20 +249,20 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+
 % --- Executes on button press in runSim_PB.
 function runSim_PB_Callback(hObject, eventdata, handles)
 % hObject    handle to runSim_PB (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-base = handleVersion(handles);
 
 % set parameter values for switches based off behavior checkboxes 
-set_param(strcat(base,'/Robot 1 Behavior/Attract_Switch'),'sw',num2str(handles.cbox_Attract.Value))
-set_param(strcat(base,'/Robot 1 Behavior/Disperse_Switch'),'sw',num2str(handles.cbox_Disperse.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FindMin_Switch'),'sw',num2str(handles.cbox_FindMin.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FindMax_Switch'),'sw',num2str(handles.cbox_FindMax.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowRidge_Switch'),'sw',num2str(handles.cbox_RidgeFollow.Value))
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/Attract_Switch','sw',num2str(handles.cbox_Attract.Value))
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/Disperse_Switch','sw',num2str(handles.cbox_Disperse.Value))
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/FindMin_Switch','sw',num2str(handles.cbox_FindMin.Value))
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/FindMax_Switch','sw',num2str(handles.cbox_FindMax.Value))
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/FollowContour_Switch','sw',num2str(handles.cbox_ContourFollow.Value))
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/FollowRidge_Switch','sw',num2str(handles.cbox_RidgeFollow.Value))
 
 % set behavior switch used to plot time histories of robots: 
 if handles.cbox_FindMin.Value && handles.cbox_FindMax.Value 
@@ -331,6 +284,7 @@ else
 end 
 
 % set simulation parameters based off text edit boxes: 
+NUM_ROBOTS= str2double(handles.numRobots_edit.String);
 SIM_TIME= str2double(handles.SimRunTime_edit.String);
 SENSOR_RANGE= str2double(handles.SensorRange_edit.String);
 AVOID_RANGE= str2double(handles.AvoidanceRange_edit.String);
@@ -343,9 +297,9 @@ y_init_center= str2double(handles.initCond_centerY_edit.String)
 init_radius= str2double(handles.initCond_radius_edit.String) 
 
 %because robot_speed is not a parameter used inside swarm_robot_test_sim,
-%update robot speed here:
+%update robot speed here: 
 
-set_param(strcat(base,'/Robot 1 Behavior/Robot Speed'),'value', handles.robSpeed_edit.String);
+set_param('Swarm_Robot_Base_2018a/Robot 1 Behavior/Robot Speed','value', handles.robSpeed_edit.String);
 
 % determine Scalar Field to use based off the radio button group: 
 % To add a scalar field, make sure that it is added in three places: 
@@ -358,39 +312,23 @@ elseif handles.singSource_RB.Value
     ScalarFieldSelection = 2;
 elseif handles.singSink_RB.Value
     ScalarFieldSelection = 3;
-elseif handles.tbSink_RB.Value
-    ScalarFieldSelection = 4;
 else
     disp('No Value Selected')
 end 
 
-if handles.SelectSimRB.Value
-    disp('sim')
-    robots = []; 
-    isExp = false;
-    NUM_ROBOTS= str2double(handles.numRobots_edit.String);
-elseif handles.SelectTestbedRB.Value 
-    disp('exp')
-    isExp = true; 
-    all_robots = [string('canary'), string('celeste'),...
-        string('pacific-blue'), string('pink'), string('redwood'), ...
-    string('schweinefleisch'), string('sunglow'), string('tidal'), ...
-    string('watermelon'),string('wisteria'),];
-    robot_select = [handles.cbox_Canary.Value,handles.cbox_Celeste.Value,...
-        handles.cbox_Pacific_Blue.Value,handles.cbox_Pink.Value, ...
-        handles.cbox_Redwood.Value, handles.cbox_Schwein.Value,...
-        handles.cbox_Sunglow.Value,handles.cbox_Tidal.Value,...
-        handles.cbox_Watermelon.Value,handles.cbox_Wisteria.Value];
-    robots = all_robots(logical(robot_select));
-    NUM_ROBOTS = length(robots);
-end
 % run simulation: 
-Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE,CONTOUR_BUFFER,ScalarFieldSelection,behavior,x_init_center,y_init_center,init_radius,isExp, robots,base) 
+Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE,CONTOUR_BUFFER,ScalarFieldSelection,behavior,x_init_center,y_init_center,init_radius) 
+
+
 
 function contourBuffer_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to contourBuffer_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of contourBuffer_edit as text
+%        str2double(get(hObject,'String')) returns contents of contourBuffer_edit as a double
+
 
 % --- Executes during object creation, after setting all properties.
 function contourBuffer_edit_CreateFcn(hObject, eventdata, handles)
@@ -404,6 +342,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+
 % --- Executes on button press in prevScalarField_PB.
 function prevScalarField_PB_Callback(hObject, eventdata, handles)
 % hObject    handle to prevScalarField_PB (see GCBO)
@@ -414,46 +353,72 @@ if handles.compField_RB.Value
     ScalarFieldSelection = 1;
     % set field width to appropriate value for the desired field:
     FIELD_WIDTH= 300;
-    p_title ='Composite Scalar Field: Field Width= 300, Suggested Robot Speed= 90';
+    % use the same plotting logic as is used in Swarm_Robot_Test_Sim
+    figure()
+    ax=gca;
+    ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
+    ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
+    %cmap = hsv(N);
+    res=100;
+    xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
+    ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
+    [X,Y] = meshgrid(xdivs,ydivs);
+    Z=readScalarField(X,Y,ScalarFieldSelection);
+    surf(X,Y,Z);
+    title('Composite Scalar Field: Field Width= 300, Suggested Robot Speed= 90')
+    view([0 90])
 elseif handles.singSource_RB.Value
     % set the scalarfieldselection to the corresponding desired value:
     ScalarFieldSelection = 2;
     % set field width to appropriate value for the desired field:
     FIELD_WIDTH= 300;   
-    p_title ='Single Source: Field Width= 300, Suggested Robot Velocity= 90';
+    % use the same plotting logic as is used in Swarm_Robot_Test_Sim
+    figure()
+    ax=gca;
+    ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
+    ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
+    %cmap = hsv(N);
+    res=100;
+    xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
+    ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
+    [X,Y] = meshgrid(xdivs,ydivs);
+    Z=readScalarFieldMulti(X,Y,ScalarFieldSelection);
+    surf(X,Y,Z);
+    title('Single Source: Field Width= 300, Suggested Robot Velocity= 90')
+    view([0 90])
 elseif handles.singSink_RB.Value
     % Set the scalarfieldselection to the corresponding desired value: 
     ScalarFieldSelection = 3;
     % set the field width to appropriate value for the desired field: 
     FIELD_WIDTH= 300;  
-    p_title = 'Single Sink: Field Width= 300, Suggested Robot Velocity= 90';
-elseif handles.tbSink_RB.Value
-    % Set the scalarfieldselection to the corresponding desired value: 
-    ScalarFieldSelection = 4;
-    % set the field width to appropriate value for the desired field: 
-    FIELD_WIDTH= 5;  
-    p_title = 'Testbed Single Sink: Field Width= 5, Suggested Robot Velocity= 0.5';
+    % use the same plotting logic as is used in Swarm_Robot_Test_Sim
+    figure()
+    ax=gca;
+    ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
+    ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
+    %cmap = hsv(N);
+    res=100;
+    xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
+    ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
+    [X,Y] = meshgrid(xdivs,ydivs);
+    Z=readScalarFieldMulti(X,Y,ScalarFieldSelection);
+    surf(X,Y,Z);
+    title('Single Sink: Field Width= 300, Suggested Robot Velocity= 90')
+    view([0 90])
 else
     disp('No Value Selected')
 end
-figure()
-ax=gca;
-ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
-ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
-%cmap = hsv(N);
-res=100;
-xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
-ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
-[X,Y] = meshgrid(xdivs,ydivs);
-Z=readScalarField(X,Y,ScalarFieldSelection);
-surf(X,Y,Z);
-title(p_title)
-view([0 90])
+
+
 
 function robSpeed_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to robSpeed_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of robSpeed_edit as text
+%        str2double(get(hObject,'String')) returns contents of robSpeed_edit as a double
+
 
 % --- Executes during object creation, after setting all properties.
 function robSpeed_edit_CreateFcn(hObject, eventdata, handles)
@@ -467,10 +432,16 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+
+
 function initCond_radius_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to initCond_radius_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of initCond_radius_edit as text
+%        str2double(get(hObject,'String')) returns contents of initCond_radius_edit as a double
+
 
 % --- Executes during object creation, after setting all properties.
 function initCond_radius_edit_CreateFcn(hObject, eventdata, handles)
@@ -484,10 +455,16 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+
+
 function initCond_centerX_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to initCond_centerX_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of initCond_centerX_edit as text
+%        str2double(get(hObject,'String')) returns contents of initCond_centerX_edit as a double
+
 
 % --- Executes during object creation, after setting all properties.
 function initCond_centerX_edit_CreateFcn(hObject, eventdata, handles)
@@ -501,12 +478,16 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+
+
 function initCond_centerY_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to initCond_centerY_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 % Hints: get(hObject,'String') returns contents of initCond_centerY_edit as text
 %        str2double(get(hObject,'String')) returns contents of initCond_centerY_edit as a double
+
 
 % --- Executes during object creation, after setting all properties.
 function initCond_centerY_edit_CreateFcn(hObject, eventdata, handles)
@@ -519,58 +500,3 @@ function initCond_centerY_edit_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on button press in SelectSimRB.
-function SelectSimRB_Callback(hObject, eventdata, handles)
-% hObject    handle to SelectSimRB (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of SelectSimRB
-if handles.SelectSimRB.Value
-    set(handles.ExpRobotSelect,'Visible','off')
-    set(handles.numRobots_edit,'Enable','on')
-    set(handles.MLVersion_box,'Visible','on')
-end
-
-% --- Executes on button press in SelectTestbedRB.
-function SelectTestbedRB_Callback(hObject, eventdata, handles)
-% hObject    handle to SelectTestbedRB (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of SelectTestbedRB
-if handles.SelectTestbedRB.Value
-    set(handles.ExpRobotSelect,'Visible','on')
-    set(handles.numRobots_edit,'Enable','off')
-    set(handles.MLVersion_box,'Visible','off')
-end
-
-%helper function to manage version 
-function [base] = handleVersion(handles)
-    if handles.SelectTestbedRB.Value
-        base = 'Swarm_Robot_Base_2016b';
-        if exist('Swarm_Robot_Base_2018a')
-            close_system('Swarm_Robot_Base_2018a',0)
-        end
-        if exist('Swarm_Robot_Base_2018b')
-            close_system('Swarm_Robot_Base_2018b',0)
-        end 
-    elseif handles.ML2018a.Value
-        base = 'Swarm_Robot_Base_2018a';
-        if exist('Swarm_Robot_Base_2018b')
-            close_system('Swarm_Robot_Base_2018b',0)
-        end
-        if exist('Swarm_Robot_Base_2016b')
-            close_system('Swarm_Robot_Base_2016b',0)
-        end 
-    else
-        base = 'Swarm_Robot_Base_2018b';
-        if exist('Swarm_Robot_Base_2018a')
-            close_system('Swarm_Robot_Base_2018a',0)
-        end
-        if exist('Swarm_Robot_Base_2016b')
-            close_system('Swarm_Robot_Base_2016b',0)
-        end 
-    end
-    open(strcat(base,'.slx'))

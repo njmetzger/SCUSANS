@@ -1,4 +1,4 @@
-function [Vf] = SwarmSimFindMin(RobotParams, NRobot, SensorRange)
+function [Vf] = SwarmSimFindMin(RobotParams, NRobot, SensorRange,ScalarFieldSelection)
 %SwarmSimFindMin Find Min behavior called in Find Min block of Swarm_Robot_Base
 %   SwarmSimFindMin takes the inputs of RobotParams, NRobot, and Sensor
 %   Range and outputs the resultant velocity. Individual velocity of robot
@@ -9,6 +9,7 @@ function [Vf] = SwarmSimFindMin(RobotParams, NRobot, SensorRange)
 
 % Determine number of robots based off length of robot params vector 
 N= floor(length(RobotParams)/4); 
+
 
 %% initialize variables 
 % position variables for 3-DOF omnibot are x,y,and theta (rotation about z-axis)
@@ -43,16 +44,16 @@ for i=1:N
     x(i)=RobotParams(i*4-3);
     y(i)=RobotParams(i*4-2);
     theta(i)=RobotParams(i*4-1);
-    SensorValue(i)=RobotParams(i*4);
+    SensorValue(i)=RobotParams(i);
 end
 
 %% Find Min/Max
-
+% undeclared_variable;
 % Determine distance and angle to each robot 
 for i=1:N 
     d(i) = sqrt(abs(x(NRobot)-x(i))^2+abs(y(NRobot)-y(i))^2);
     O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-    amp(i) = SensorValue(i)-SensorValue(NRobot);
+    amp(i)=(readScalarField(x(i),y(i),ScalarFieldSelection)-readScalarField(x(NRobot),y(NRobot),ScalarFieldSelection));
 end
 
 % max_idx=find(robotAmp==max(robotAmp));

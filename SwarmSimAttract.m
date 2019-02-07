@@ -1,4 +1,4 @@
-function [Vf] = SwarmSimAttract(RobotParams, NRobot, SensorRange)
+function [Vf] = SwarmSimAttract(RobotParams,NRobot,SensorRange,RobotSpeed)
 %SwarmSimAttract Attract behavior for Swarm_Adaptive_Navigation_Simulator.slx
 %   LATEST UPDATE: 08/30/2018 by NJM 
 % This attract behavior is called by the Robot # behavior blocks in
@@ -51,13 +51,14 @@ for i=1:N
 end
 
 %% Attract Behavior 
+V_const=RobotSpeed; 
 
 % Determine distance and angle to each robot 
 for i=1:N 
     d(i) = sqrt(abs(x(NRobot)-x(i))^2+abs(y(NRobot)-y(i))^2);
     O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-    Vx(i)= cos(O(i));
-    Vy(i)= sin(O(i));
+    Vx(i)= V_const*cos(O(i));
+    Vy(i)= V_const*sin(O(i));
 end
 
 % If robot is within sensor range of  Nrobot, it is attracted to that
@@ -97,7 +98,7 @@ idx=find(d<=SensorRange);
 Vfx= sum(Vx(idx));
 Vfy= sum(Vy(idx)); 
 
-Vf= [Vfx Vfy Vft]/length(idx);
+Vf= [Vfx Vfy Vft];
 
 
 end 
