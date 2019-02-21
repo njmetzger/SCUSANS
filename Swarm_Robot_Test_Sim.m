@@ -440,8 +440,8 @@ switch behavior
             rob_num_legend= num2str(i);
             legend_labels{1,i}= strcat(leg_str1, rob_num_legend);
             plot(time, sensor_value_PI(:,i))
-            title('Sensor Value Readings')
         end
+        title('Sensor Value Readings','fontsize',12)
         %plot the concentration at the mean position value
         % plot(time, avg_concentration(:,1));
         
@@ -453,8 +453,8 @@ switch behavior
         plot(time,desired_contour_plot,'k--');  % plot contour value
         plot(time,positive_buffer_plot,'k-.');
         plot(time,negative_buffer_plot,'k-.'); legend(legend_labels);
-        xlabel('Time (s)')
-        ylabel('Sensor Value')
+        xlabel('Time (s)','fontsize',12)
+        ylabel('Sensor Value','fontsize',12)
         hold off
         
         
@@ -472,13 +472,13 @@ switch behavior
             rob_num_legend= num2str(i);
             legend_labels{1,i}= strcat(leg_str1, rob_num_legend);
             plot(time, sensor_value_PI(:,i))
-            title('Sensor Value Readings')
         end
+        title('Sensor Value Readings','fontsize',12)
         % add reference for global min:
         legend_labels{1,(NUM_ROBOTS+1)}= 'Known Global Minimum';
         plot(time,global_min_val,'k--'); legend(legend_labels) ;% plot minimum value
-        xlabel('Time (s)')
-        ylabel('Sensor Value')
+        xlabel('Time (s)','fontsize',12)
+        ylabel('Sensor Value','fontsize',12)
     case 'Find Max'
         % plot the individual robot concentrations:
         figure()
@@ -488,8 +488,8 @@ switch behavior
             rob_num_legend= num2str(i);
             legend_labels{1,i}= strcat(leg_str1, rob_num_legend);
             plot(time, sensor_value_PI(:,i))
-            title('Sensor Value Readings')
         end
+        title('Sensor Value Readings','fontsize',12)
         % add reference for global max:
         legend_labels{1,(NUM_ROBOTS+1)}= 'Known Global Maximum';
         plot(time,global_max_val,'k--'); legend(legend_labels); % plot maximum value
@@ -514,7 +514,7 @@ end
 contour3(X,Y,Z)
 view(-45,45)
 %surf(X,Y,Z)
-title ('Time History of Robot positions'), xlabel('X (m)'), ylabel('Y (m)'),zlabel('Sensor Value')
+title ('Time History of Robot Positions','fontsize',12), xlabel('X (m)','fontsize',12), ylabel('Y (m)','fontsize',12),zlabel('Sensor Value','fontsize',12)
 hold off
 end
 
