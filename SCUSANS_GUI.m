@@ -22,7 +22,7 @@ function varargout = SCUSANS_GUI(varargin)
 
 % Edit the above text to modify the response to help SCUSANS_GUI
 
-% Last Modified by GUIDE v2.5 07-Feb-2019 12:21:53
+% Last Modified by GUIDE v2.5 22-Feb-2019 15:49:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -188,7 +188,6 @@ set_param(strcat(base,'/Robot 1 Behavior/Disperse_Switch'),'sw',num2str(handles.
 set_param(strcat(base,'/Robot 1 Behavior/FindMin_Switch'),'sw',num2str(handles.cbox_FindMin.Value))
 set_param(strcat(base,'/Robot 1 Behavior/FindMax_Switch'),'sw',num2str(handles.cbox_FindMax.Value))
 set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowRidge_Switch'),'sw',num2str(handles.cbox_RidgeFollow.Value))
 
 
 
@@ -309,7 +308,6 @@ set_param(strcat(base,'/Robot 1 Behavior/Disperse_Switch'),'sw',num2str(handles.
 set_param(strcat(base,'/Robot 1 Behavior/FindMin_Switch'),'sw',num2str(handles.cbox_FindMin.Value))
 set_param(strcat(base,'/Robot 1 Behavior/FindMax_Switch'),'sw',num2str(handles.cbox_FindMax.Value))
 set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowRidge_Switch'),'sw',num2str(handles.cbox_RidgeFollow.Value))
 set_param(strcat(base,'/Robot 1 Behavior/GoTo_Switch'),'sw',num2str(handles.cbox_GoTo.Value))
 
 % set behavior switch used to plot time histories of robots: 
@@ -632,4 +630,17 @@ function goTo_Y_Coord_edit_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in clearGraphs_PB.
+function clearGraphs_PB_Callback(hObject, eventdata, handles)
+% hObject    handle to clearGraphs_PB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+all_figs = findobj(0, 'type', 'figure'); 
+for i=1:length(all_figs)
+    if ~strcmp(all_figs(i).Name, 'SCUSANS_GUI')
+        close(all_figs(i))
+    end
 end
