@@ -68,7 +68,7 @@ if ScalarFieldSelection == 1
     x_r2c=-200;
     y_r2c=250;
     r_r2=200;
-    R2 = @(x,y) real( r2_height./(((r2_er.*((x-x_r2).^2+(y-y_r2).^2)^(.5)).^4+1).*(r2_ro.*(((x-x_r2c).^2+(y-y_r2c).^2).^(.5)-r_r2).^(2)+1)) );
+    R2 = @(x,y) real( r2_height./(((r2_er.*((x-x_r2).^2+(y-y_r2).^2).^(.5)).^4+1).*(r2_ro.*(((x-x_r2c).^2+(y-y_r2c).^2).^(.5)-r_r2).^(2)+1)) );
     
     % persistent t_height t_er t_r x_t t_x1 t_y1 t_x2 t_y2
     
@@ -85,7 +85,7 @@ if ScalarFieldSelection == 1
     % d_t=(abs((t_y2-t_y1).*x-(t_x2-t_x1).*y+t_x2*t_y1-t_y2*t_x1)./(t_dy.^2+t_dx^2).^(0.5));
     
     
-    scalarFunction= @(x,y) M1(x,y) + M2(x,y)+M3(x,y) + R1(x,y) + R2(x,y) + T(x,y) ;
+    scalarFunction= @(x,y) ( M1(x,y) + M2(x,y) + M3(x,y) + R1(x,y) +  R2(x,y) + T(x,y)) ;
     Z = scalarFunction(a,b);
 elseif ScalarFieldSelection == 2
     m1_height=50;

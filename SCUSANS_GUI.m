@@ -326,7 +326,9 @@ elseif handles.cbox_FindMin.Value
 elseif handles.cbox_FindMax.Value 
     behavior = 'Find Max' 
 elseif handles.cbox_ContourFollow.Value
-    behavior = 'Contour Following' 
+    behavior = 'Contour Following'
+elseif handles.cbox_GoTo.Value
+    behavior = 'Go To' 
 else 
     behavior = 'Null' 
 end 
@@ -389,7 +391,7 @@ elseif handles.SelectTestbedRB.Value
     NUM_ROBOTS = length(robots);
 end
 % run simulation: 
-Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE,CONTOUR_BUFFER,ScalarFieldSelection,behavior,x_init_center,y_init_center,init_radius,isExp, robots,base) 
+Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE,CONTOUR_BUFFER,GoTo_Coords,ScalarFieldSelection,behavior,x_init_center,y_init_center,init_radius,isExp, robots,base) 
 
 function contourBuffer_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to contourBuffer_edit (see GCBO)

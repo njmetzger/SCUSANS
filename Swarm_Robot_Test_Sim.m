@@ -1,5 +1,5 @@
 function Swarm_Robot_Test_Sim(NUM_ROBOTS,Sim_Time,Sense_Range,AvoidanceRange,...
-    DesValue,CONTOUR_BUFFER,ScalarFieldSelection,behavior,x_init,y_init,...
+    DesValue,CONTOUR_BUFFER,GoTo,ScalarFieldSelection,behavior,x_init,y_init,...
     radius_init,isExp, robots,base)
 % SWARM_ROBOT_TEST_SIM - < Setup and initialization utility for running the
 % swarm simulator.>
@@ -108,7 +108,7 @@ xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
 ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
 [X,Y] = meshgrid(xdivs,ydivs);
 Z=readScalarField(X,Y,ScalarFieldSelection);
-surf(X,Y,Z-3);  % why is this surfed at z-3??
+surf(X,Y,Z);  % why is this surfed at z-3??
 view([0 90])
 axis([-FIELD_WIDTH FIELD_WIDTH -FIELD_WIDTH FIELD_WIDTH])
 hold on
@@ -151,7 +151,7 @@ close(v)
 time=simOut.simout.time;
 
 %% Plot time history of robots
-plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,behavior,X,Y,Z);
+plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,GoTo,behavior,X,Y,Z);
 
 end
 
@@ -388,7 +388,7 @@ end
 
 %% plotRobotHistory()
 
-function [] = plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,behavior,X,Y,Z)
+function [] = plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,GoTo,behavior,X,Y,Z)
 
 % assignin('base','base_RobotData', Robot_Data)
 x_PI= zeros(length(Robot_Data(1).x),NUM_ROBOTS);
@@ -495,7 +495,29 @@ switch behavior
         plot(time,global_max_val,'k--'); legend(legend_labels); % plot maximum value
         xlabel('Time (s)')
         ylabel('Sensor Value')
-        
+    case 'Go To'
+        figure()
+        hold on
+        robot_legend = {}; 
+        xs = zeros(1,NUM_ROBOTS); 
+        ys = zeros(1,NUM_ROBOTS);
+        for i=1:NUM_ROBOTS
+            leg_str1= 'Robot Number  ';
+            rob_num_legend= num2str(i);
+            robot_legend{i} = strcat(leg_str1,leg_str1); 
+            %legend_label= strcat(leg_str1, rob_num_legend);
+            ps(i) = plot(Robot_Data(i).x, Robot_Data(i).y,'LineWidth',2);
+            plot(Robot_Data(i).x(1), Robot_Data(i).y(1), 'kx');
+            plot(Robot_Data(i).x(end), Robot_Data(i).y(end), 'ko')
+            xs(i) = Robot_Data(i).x(end); 
+            ys(i) = Robot_Data(i).y(end);
+        end
+        x = sum(xs)/NUM_ROBOTS;
+        y = sum(ys)/NUM_ROBOTS;
+        ps(length(ps)+1) = plot(x,y,'k*','MarkerSize',18);
+        ps(length(ps)+1) = plot(GoTo(1),GoTo(2), 'ks','MarkerSize',18);
+        title ('Time History of Robot Positions','fontsize',12), xlabel('X (m)','fontsize',12), ylabel('Y (m)','fontsize',12),
+        hold off
     case 'Incompatible'
         disp('You have selected an incompatible pair of behaviors, such as selecting multiple of the FindMin/FindMax/FindContour behaviors. Plots could not be generated.')
         
