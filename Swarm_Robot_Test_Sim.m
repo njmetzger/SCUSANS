@@ -108,7 +108,7 @@ xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
 ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
 [X,Y] = meshgrid(xdivs,ydivs);
 Z=readScalarField(X,Y,ScalarFieldSelection);
-surf(X,Y,Z);  % why is this surfed at z-3??
+surf(X,Y,Z);  
 view([0 90])
 axis([-FIELD_WIDTH FIELD_WIDTH -FIELD_WIDTH FIELD_WIDTH])
 hold on

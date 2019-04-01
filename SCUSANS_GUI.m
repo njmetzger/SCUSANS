@@ -22,7 +22,7 @@ function varargout = SCUSANS_GUI(varargin)
 
 % Edit the above text to modify the response to help SCUSANS_GUI
 
-% Last Modified by GUIDE v2.5 07-Feb-2019 12:21:53
+% Last Modified by GUIDE v2.5 30-Mar-2019 19:34:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -111,6 +111,12 @@ function cbox_RidgeFollow_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% --- Executes on button press in cbox_TrenchFollow.
+function cbox_TrenchFollow_Callback(hObject, eventdata, handles)
+% hObject    handle to cbox_TrenchFollow (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% ROBOT NAME CHECKLIST CALLBACK FCNS %%%
@@ -189,6 +195,8 @@ set_param(strcat(base,'/Robot 1 Behavior/FindMin_Switch'),'sw',num2str(handles.c
 set_param(strcat(base,'/Robot 1 Behavior/FindMax_Switch'),'sw',num2str(handles.cbox_FindMax.Value))
 set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
 set_param(strcat(base,'/Robot 1 Behavior/FollowRidge_Switch'),'sw',num2str(handles.cbox_RidgeFollow.Value))
+set_param(strcat(base,'/Robot 1 Behavior/FollowTrench_Switch'),'sw',num2str(handles.cbox_TrenchFollow.Value))
+set_param(strcat(base,'/Robot 1 Behavior/GoTo_Switch'),'sw',num2str(handles.cbox_GoTo.Value))
 
 
 
@@ -310,6 +318,7 @@ set_param(strcat(base,'/Robot 1 Behavior/FindMin_Switch'),'sw',num2str(handles.c
 set_param(strcat(base,'/Robot 1 Behavior/FindMax_Switch'),'sw',num2str(handles.cbox_FindMax.Value))
 set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
 set_param(strcat(base,'/Robot 1 Behavior/FollowRidge_Switch'),'sw',num2str(handles.cbox_RidgeFollow.Value))
+set_param(strcat(base,'/Robot 1 Behavior/FollowTrench_Switch'),'sw',num2str(handles.cbox_TrenchFollow.Value))
 set_param(strcat(base,'/Robot 1 Behavior/GoTo_Switch'),'sw',num2str(handles.cbox_GoTo.Value))
 
 % set behavior switch used to plot time histories of robots: 
@@ -329,6 +338,10 @@ elseif handles.cbox_ContourFollow.Value
     behavior = 'Contour Following'
 elseif handles.cbox_GoTo.Value
     behavior = 'Go To' 
+elseif handles.cbox_RidgeFollow.Value
+    behavior = 'Ridge Follow'
+elseif handles.cbox_TrenchFollow.Value
+    behavior = 'Trench Follow'
 else 
     behavior = 'Null' 
 end 
@@ -554,7 +567,7 @@ end
 
 %helper function to manage version 
 function [base] = handleVersion(handles)
-    if handles.SelectTestbedRB.Value
+    if handles.SelectTestbedRB.Value || handles.ML2016b.Value
         base = 'Swarm_Robot_Base_2016b';
         if exist('Swarm_Robot_Base_2018a')
             close_system('Swarm_Robot_Base_2018a',0)
