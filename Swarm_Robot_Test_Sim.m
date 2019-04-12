@@ -101,6 +101,8 @@ cmap = hsv(numel(Robot_Data));
 % First plot scalar field
 figure(1)
 ax=gca;
+%Plot outside field with if robots exit field
+
 ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
 ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
 res=100;
@@ -151,7 +153,7 @@ close(v)
 time=simOut.simout.time;
 
 %% Plot time history of robots
-plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,GoTo,behavior,X,Y,Z);
+plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,GoTo,behavior,X,Y,Z,ScalarFieldSelection);
 
 end
 
@@ -388,7 +390,7 @@ end
 
 %% plotRobotHistory()
 
-function [] = plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,GoTo,behavior,X,Y,Z)
+function [] = plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,GoTo,behavior,X,Y,Z,ScalarFieldSelection)
 
 % assignin('base','base_RobotData', Robot_Data)
 x_PI= zeros(length(Robot_Data(1).x),NUM_ROBOTS);
@@ -402,6 +404,22 @@ for i=1:NUM_ROBOTS
     theta_PI(:,i)= Robot_Data(i).theta;
     sensor_value_PI(:,i)= Robot_Data(i).sensor_value;
 end
+
+%Reevaluate X,Y,Z
+minx = min(min(min(X)),min(min(x_PI)));
+miny = min(min(min(Y)),min(min(y_PI)));
+maxx = max(max(max(X)),max(max(x_PI)));
+maxy = max(max(max(Y)),max(max(y_PI)));
+
+ax.XLim=[minx maxx];
+ax.YLim=[miny maxy];
+res=100;
+xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
+ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
+[X,Y] = meshgrid(xdivs,ydivs);
+Z=readScalarField(X,Y,ScalarFieldSelection);
+
+
 
 % Determine Average Position of swarm (change to centroid?)
 x_PI_ave= zeros(NUM_ROBOTS, 1);
