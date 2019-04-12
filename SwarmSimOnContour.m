@@ -24,12 +24,10 @@ belowContour=false;
 aboveContour=false;
 
 %% Set x,y,theta, and SensorValue inputs into an array
-for i=1:N
-    x(i)=RobotParams(i*4-3);
-    y(i)=RobotParams(i*4-2);
-    theta(i)=RobotParams(i*4-1);
-    SensorValue(i)=RobotParams(i*4);
-end
+x(1,1:N)=RobotParams(1:4:4*N);
+y(1,1:N)=RobotParams(2:4:4*N);
+theta(1,1:N)=RobotParams(3:4:4*N);
+SensorValue(1,1:N)=RobotParams(4:4:4*N);
 
 %% Algorithm
 

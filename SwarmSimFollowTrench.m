@@ -34,18 +34,14 @@ Vf = [0.0 0.0 0.0];
 
 %% Set x,y,theta, and SensorValue inputs into an array
 
-for i=1:N
-    x(i)=RobotParams(i*4-3);
-    y(i)=RobotParams(i*4-2);
-    theta(i)=RobotParams(i*4-1);
-    SensorValue(i)=RobotParams(i*4);
-end
+x(1,1:N)=RobotParams(1:4:4*N);
+y(1,1:N)=RobotParams(2:4:4*N);
+theta(1,1:N)=RobotParams(3:4:4*N);
+SensorValue(1,1:N)=RobotParams(4:4:4*N);
 
-% Determine distance and angle to each robot 
-for i=1:N 
-    d(i) = sqrt( ( x(NRobot)-x(i) )^2 + ( y(NRobot)-y(i) )^2 ); 
-    O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-end
+% Determine distance and angle to each robot  
+d = sqrt( ( x(NRobot)-x ).^2 + ( y(NRobot)-y ).^2 ); 
+O = atan2((y-y(NRobot)),(x-x(NRobot)));
 
 %% Algorithm
 
@@ -56,13 +52,9 @@ min_robot_idx=find(SensorValue==min(SensorValue(inRange_idx)));
 
 % Calculate weighting function 
 for i=1:N
-    if min_robot_idx ~= i
         d_from_min(i) = sqrt( ( x(min_robot_idx)-x(i) )^2 + ( y(min_robot_idx)-y(i) )^2 );
         delta_z_from_min(i) = SensorValue(i)-SensorValue(min_robot_idx);
         amp(i)= d_from_min(i)/delta_z_from_min(i);
-    else
-        amp(i) = -inf; 
-    end
 end
 
 % Find min"amplitude" robot
@@ -74,11 +66,7 @@ if ~isempty(ridge_robot_idx) && length(ridge_robot_idx) == 1
 
     %calculate angle from master to All robots an
     for i = 1:N 
-        if i ==min_robot_idx
-           O_minToRobots(i) = nan; 
-        else
-           O_minToRobots(i) = atan2((y(i)-y(min_robot_idx)),(x(i)-x(min_robot_idx)));
-        end
+       O_minToRobots(i) = atan2((y(i)-y(min_robot_idx)),(x(i)-x(min_robot_idx)));
     end
     Theta_d = O_minToRobots(ridge_robot_idx); 
     if Theta_d < 0 

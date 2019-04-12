@@ -29,30 +29,24 @@ Vft=0;
 Vf=[0.0 0.0 0.0];
 
 %% Set x,y,theta, and SensorValue inputs into an array
-for i=1:N
-    x(i)=RobotParams(i*4-3);
-    y(i)=RobotParams(i*4-2);
-    theta(i)=RobotParams(i*4-1);
-    SensorValue(i)=RobotParams(i*4);
-end
+x(1,1:N)=RobotParams(1:4:4*N);
+y(1,1:N)=RobotParams(2:4:4*N);
+theta(1,1:N)=RobotParams(3:4:4*N);
+SensorValue(1,1:N)=RobotParams(4:4:4*N);
 
 %% Find Min/Max
 
 % Determine distance and angle to each robot 
-for i=1:N 
-    d(i) = sqrt(abs(x(NRobot)-x(i))^2+abs(y(NRobot)-y(i))^2);
-    O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-    amp(i)=(SensorValue(i)-SensorValue(NRobot));
-end
+d = sqrt(abs(x(NRobot)-x).^2+abs(y(NRobot)-y).^2);
+O = atan2((y-y(NRobot)),(x-x(NRobot)));
+amp=(SensorValue-SensorValue(NRobot));
 
 % max_idx=find(robotAmp==max(robotAmp));
 
 inRange_idx=find(d<=SensorRange);
 
-for i=1:numel(inRange_idx)
-    x_comp(i)=cos(O(inRange_idx(i)))*amp(inRange_idx(i));
-    y_comp(i)=sin(O(inRange_idx(i)))*amp(inRange_idx(i));
-end
+x_comp=cos(O(inRange_idx)).*amp(inRange_idx);
+y_comp=sin(O(inRange_idx)).*amp(inRange_idx);
 
 Vx=sum(x_comp);
 Vy=sum(y_comp);

@@ -40,20 +40,16 @@ Vf=[0.0 0.0 0.0];
 % y_comp=zeros(1,N);
 
 %% Set x,y,theta, and SensorValue inputs into an array
-for i=1:N
-    x(i)=RobotParams(i*4-3);
-    y(i)=RobotParams(i*4-2);
-    theta(i)=RobotParams(i*4-1);
-    SensorValue(i)=RobotParams(i);
-end
+x(1,1:N)=RobotParams(1:4:4*N);
+y(1,1:N)=RobotParams(2:4:4*N);
+theta(1,1:N)=RobotParams(3:4:4*N);
+SensorValue(1,1:N)=RobotParams(4:4:4*N);
 
 %% Obstacle Avoidance Behavior 
 
 % Determine distance and angle to each robot 
-for i=1:N 
-    d(i) = ( ( x(NRobot)-x(i) )^2 + ( y(NRobot)-y(i) )^2 )^(0.5); 
-    O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-end
+d = sqrt( ( x(NRobot)-x ).^2 + ( y(NRobot)-y ).^2 ); 
+O = atan2((y-y(NRobot)),(x-x(NRobot)));
 
 % Calculate avoidance velocities 
 for i=1:N

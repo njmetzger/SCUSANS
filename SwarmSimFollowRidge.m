@@ -34,18 +34,15 @@ Vf = [0.0 0.0 0.0];
 
 %% Set x,y,theta, and SensorValue inputs into an array
 
-for i=1:N
-    x(i)=RobotParams(i*4-3);
-    y(i)=RobotParams(i*4-2);
-    theta(i)=RobotParams(i*4-1);
-    SensorValue(i)=RobotParams(i*4);
-end
+x(1,1:N)=RobotParams(1:4:end);
+y(1,1:N)=RobotParams(2:4:end);
+theta(1,1:N)=RobotParams(3:4:end);
+SensorValue(1,1:N)=RobotParams(4:4:end);
 
 % Determine distance and angle to each robot 
-for i=1:N 
-    d(i) = sqrt( ( x(NRobot)-x(i) )^2 + ( y(NRobot)-y(i) )^2 ); 
-    O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-end
+d= sqrt( ( x(NRobot)-x ).^2 + ( y(NRobot)-y ).^2 ); 
+O= atan2((y-y(NRobot)),(x-x(NRobot)));
+
 
 %% Algorithm
 
@@ -55,14 +52,15 @@ inRange_idx=find(d<=SensorRange);
 max_robot_idx=find(SensorValue==max(SensorValue(inRange_idx)));
 
 % Calculate weighting function 
+% for i=1:N
+%     d_from_max(i) = sqrt( ( x(max_robot_idx)-x(i) )^2 + ( y(max_robot_idx)-y(i) )^2 );
+%     delta_z_from_max(i) = SensorValue(max_robot_idx)-SensorValue(i);
+%     amp(i)= d_from_max(i)/delta_z_from_max(i);
+% end
 for i=1:N
-    if max_robot_idx ~= i
-        d_from_max(i) = sqrt( ( x(max_robot_idx)-x(i) )^2 + ( y(max_robot_idx)-y(i) )^2 );
-        delta_z_from_max(i) = SensorValue(max_robot_idx)-SensorValue(i);
-        amp(i)= d_from_max(i)/delta_z_from_max(i);
-    else
-        amp(i) = -inf; 
-    end
+    d_from_max(i) = sqrt( ( x(max_robot_idx)-x(i) )^2 + ( y(max_robot_idx)-y(i) )^2 );
+    delta_z_from_max(i) = SensorValue(max_robot_idx)-SensorValue(i);
+    amp(i)= d_from_max(i)/delta_z_from_max(i);
 end
 
 % Find max "amplitude" robot
@@ -74,11 +72,7 @@ if ~isempty(ridge_robot_idx) && length(ridge_robot_idx) == 1
 
     %calculate angle from master to All robots an
     for i = 1:N 
-        if i ==max_robot_idx
-           O_maxToRobots(i) = nan; 
-        else
-           O_maxToRobots(i) = atan2((y(i)-y(max_robot_idx)),(x(i)-x(max_robot_idx)));
-        end
+        O_maxToRobots(i) = atan2((y(i)-y(max_robot_idx)),(x(i)-x(max_robot_idx)));
     end
     Theta_d = O_maxToRobots(ridge_robot_idx); 
     if Theta_d < 0 

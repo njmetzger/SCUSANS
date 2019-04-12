@@ -43,22 +43,20 @@ Vf=[0.0 0.0 0.0];
 AttractAngle= 0; 
 
 %% Set x,y,theta, and SensorValue inputs into an array
-for i=1:N
-    x(i)=RobotParams(i*4-3);
-    y(i)=RobotParams(i*4-2);
-    theta(i)=RobotParams(i*4-1);
-    SensorValue(i)=RobotParams(i);
-end
+x=RobotParams(1:4:end);
+y=RobotParams(2:4:end);
+theta=RobotParams(3:4:end);
+SensorValue=RobotParams(4:4:end);
+
 
 %% Attract Behavior 
 
 % Determine distance and angle to each robot 
-for i=1:N 
-    d(i) = sqrt(abs(x(NRobot)-x(i))^2+abs(y(NRobot)-y(i))^2);
-    O(i) = atan2((y(i)-y(NRobot)),(x(i)-x(NRobot)));
-    Vx(i)= cos(O(i));
-    Vy(i)= sin(O(i));
-end
+d = sqrt(abs(x(NRobot)-x).^2+abs(y(NRobot)-y).^2);
+O = atan2((y-y(NRobot)),(x-x(NRobot)));
+Vx= cos(O);
+Vy= sin(O);
+
 
 % If robot is within sensor range of  Nrobot, it is attracted to that
 % robot. If the  robot is outside of sensor range, then that robot has
