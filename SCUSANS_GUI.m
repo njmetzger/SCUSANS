@@ -22,7 +22,7 @@ function varargout = SCUSANS_GUI(varargin)
 
 % Edit the above text to modify the response to help SCUSANS_GUI
 
-% Last Modified by GUIDE v2.5 30-Mar-2019 19:34:12
+% Last Modified by GUIDE v2.5 04-May-2019 14:12:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -205,10 +205,6 @@ function numRobots_edit_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of numRobots_edit as text
-%        str2double(get(hObject,'String')) returns contents of numRobots_edit as a double
-
-
 % --- Executes during object creation, after setting all properties.
 function numRobots_edit_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to numRobots_edit (see GCBO)
@@ -235,10 +231,6 @@ function SimRunTime_edit_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of SimRunTime_edit as text
-%        str2double(get(hObject,'String')) returns contents of SimRunTime_edit as a double
-
-
 % --- Executes during object creation, after setting all properties.
 function SimRunTime_edit_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to SimRunTime_edit (see GCBO)
@@ -250,8 +242,6 @@ function SimRunTime_edit_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
 
 function SensorRange_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to SensorRange_edit (see GCBO)
@@ -352,6 +342,7 @@ SENSOR_RANGE= str2double(handles.SensorRange_edit.String);
 AVOID_RANGE= str2double(handles.AvoidanceRange_edit.String);
 DESIRED_VALUE= str2double(handles.DesiredContour_edit.String);
 CONTOUR_BUFFER= str2double(handles.contourBuffer_edit.String);
+RIDGE_BUFFER= str2double(handles.ridgeBuffer_edit.String);
 % ROBOT_SPEED= str2double(handles.robSpeed_edit.String); 
 
 x_init_center= str2double(handles.initCond_centerX_edit.String); 
@@ -379,6 +370,8 @@ elseif handles.singSink_RB.Value
     ScalarFieldSelection = 3;
 elseif handles.tbSink_RB.Value
     ScalarFieldSelection = 4;
+elseif handles.wideRidge_RB.Value
+    ScalarFieldSelection = 5;
 else
     disp('No Value Selected')
 end 
@@ -404,7 +397,7 @@ elseif handles.SelectTestbedRB.Value
     NUM_ROBOTS = length(robots);
 end
 % run simulation: 
-Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE,CONTOUR_BUFFER,GoTo_Coords,ScalarFieldSelection,behavior,x_init_center,y_init_center,init_radius,isExp, robots,base) 
+Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE,CONTOUR_BUFFER,RIDGE_BUFFER,GoTo_Coords,ScalarFieldSelection,behavior,x_init_center,y_init_center,init_radius,isExp, robots,base) 
 
 function contourBuffer_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to contourBuffer_edit (see GCBO)
@@ -452,6 +445,12 @@ elseif handles.tbSink_RB.Value
     % set the field width to appropriate value for the desired field: 
     FIELD_WIDTH= 5;  
     p_title = 'Testbed Single Sink: Field Width= 5, Suggested Robot Velocity= 0.5';
+elseif handles.wideRidge_RB.Value
+    % Set the scalarfieldselection to the corresponding desired value: 
+    ScalarFieldSelection = 5;
+    % set the field width to appropriate value for the desired field: 
+    FIELD_WIDTH= 1500;  
+    p_title = 'Testbed Single Sink: Field Width= 1500, Suggested Robot Velocity= 1';
 else
     disp('No Value Selected')
 end
@@ -464,10 +463,22 @@ res=100;
 xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
 ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
 [X,Y] = meshgrid(xdivs,ydivs);
-Z=readScalarField(X,Y,ScalarFieldSelection);
-surf(X,Y,Z);
-title(p_title)
-view([0 90])
+if ScalarFieldSelection ~=5
+    Z=readScalarField(X,Y,ScalarFieldSelection);
+    surf(X,Y,Z);
+    title(p_title)
+    view([0 90])
+else
+    for i = 1:length(X)
+        for j = 1:length(Y)
+            Z(i,j) = readScalarField(X(i,j),Y(i,j),ScalarFieldSelection);
+        end
+    end
+    surf(X,Y,Z);
+    title(p_title)
+    view([0 90])
+end
+    
 
 function robSpeed_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to robSpeed_edit (see GCBO)
@@ -601,18 +612,10 @@ function cbox_GoTo_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of cbox_GoTo
-
-
-
 function goTo_X_Coord_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to goTo_X_Coord_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of goTo_X_Coord_edit as text
-%        str2double(get(hObject,'String')) returns contents of goTo_X_Coord_edit as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function goTo_X_Coord_edit_CreateFcn(hObject, eventdata, handles)
@@ -626,20 +629,34 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function goTo_Y_Coord_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to goTo_Y_Coord_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of goTo_Y_Coord_edit as text
-%        str2double(get(hObject,'String')) returns contents of goTo_Y_Coord_edit as a double
-
-
 % --- Executes during object creation, after setting all properties.
 function goTo_Y_Coord_edit_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to goTo_Y_Coord_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function ridgeBuffer_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to ridgeBuffer_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes during object creation, after setting all properties.
+function ridgeBuffer_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ridgeBuffer_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

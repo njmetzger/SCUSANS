@@ -1,4 +1,4 @@
-function Vf= SwarmSimFollowTrench(RobotParams, NRobot,SensorRange)
+function Vf= SwarmSimFollowTrench(RobotParams, NRobot,SensorRange,RidgeBuffer)
 % SWARMSIMCHECKRIDGE - <Determines....>
 
 % Outputs:
@@ -49,15 +49,22 @@ inRange_idx=find(d<=SensorRange);
 
 % Find robot with max sensor value
 min_robot_idx=find(SensorValue==min(SensorValue(inRange_idx)));
+if length(min_robot_idx)>1
+    min_robot_idx = min_robot_idx(1);
+end
 
 % Calculate weighting function 
 for i=1:N
         d_from_min(i) = sqrt( ( x(min_robot_idx)-x(i) )^2 + ( y(min_robot_idx)-y(i) )^2 );
         delta_z_from_min(i) = SensorValue(i)-SensorValue(min_robot_idx);
+    if delta_z_from_min(i) < RidgeBuffer
+        amp(i)=0;
+    else
         amp(i)= d_from_min(i)/delta_z_from_min(i);
+    end
 end
 
-% Find min"amplitude" robot
+% Find max "amplitude" robot
 ridge_robot_idx=find(amp==max(amp(inRange_idx)));
 if ~isempty(ridge_robot_idx) && length(ridge_robot_idx) == 1 
     % Angle from min to ridge robot 
@@ -66,7 +73,7 @@ if ~isempty(ridge_robot_idx) && length(ridge_robot_idx) == 1
 
     %calculate angle from master to All robots an
     for i = 1:N 
-       O_minToRobots(i) = atan2((y(i)-y(min_robot_idx)),(x(i)-x(min_robot_idx)));
+        O_minToRobots(i) = atan2((y(i)-y(min_robot_idx)),(x(i)-x(min_robot_idx)));
     end
     Theta_d = O_minToRobots(ridge_robot_idx); 
     if Theta_d < 0 
@@ -76,12 +83,13 @@ if ~isempty(ridge_robot_idx) && length(ridge_robot_idx) == 1
         n_robots_right = sum(((Theta_d-pi)*ones(1,N) <= O_minToRobots) & (O_minToRobots < Theta_d*ones(1,N))); 
         n_robots_left = sum((Theta_d*ones(1,N)<O_minToRobots) | (O_minToRobots< (Theta_d-pi)*ones(1,N))); 
     end
-    if n_robots_right>0 && n_robots_left>0
+    N_sided = floor((N-2)/2)-2;
+    if n_robots_right>N_sided && n_robots_left>N_sided
         Vf = [x(ridge_robot_idx)-x(min_robot_idx), y(ridge_robot_idx)-y(min_robot_idx)];
         Vm = sqrt(sum(Vf.^2));
         Vfx=Vf(1)/Vm;
         Vfy=Vf(2)/Vm;
-    elseif n_robots_right>0
+    elseif n_robots_right>N_sided
         switch NRobot
             case min_robot_idx
                 Vfx = 0;
@@ -94,7 +102,7 @@ if ~isempty(ridge_robot_idx) && length(ridge_robot_idx) == 1
                 Vfx=Vf(1)/Vm;
                 Vfy=Vf(2)/Vm;
         end
-    elseif n_robots_left>0 
+    elseif n_robots_left>N_sided
         switch NRobot
             case min_robot_idx
                 Vfx = 0;

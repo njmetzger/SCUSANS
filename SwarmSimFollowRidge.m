@@ -1,4 +1,4 @@
-function Vf= SwarmSimFollowRidge(RobotParams, NRobot,SensorRange)
+function Vf= SwarmSimFollowRidge(RobotParams, NRobot,SensorRange,RidgeBuffer)
 % SWARMSIMCHECKRIDGE - <Determines....>
 
 % Outputs:
@@ -50,6 +50,9 @@ inRange_idx=find(d<=SensorRange);
 
 % Find robot with max sensor value
 max_robot_idx=find(SensorValue==max(SensorValue(inRange_idx)));
+if length(max_robot_idx)>1
+    max_robot_idx = max_robot_idx(1);
+end
 
 % Calculate weighting function 
 % for i=1:N
@@ -60,7 +63,11 @@ max_robot_idx=find(SensorValue==max(SensorValue(inRange_idx)));
 for i=1:N
     d_from_max(i) = sqrt( ( x(max_robot_idx)-x(i) )^2 + ( y(max_robot_idx)-y(i) )^2 );
     delta_z_from_max(i) = SensorValue(max_robot_idx)-SensorValue(i);
-    amp(i)= d_from_max(i)/delta_z_from_max(i);
+    if delta_z_from_max(i) < RidgeBuffer
+        amp(i)=0;
+    else
+        amp(i)= d_from_max(i)/delta_z_from_max(i);
+    end
 end
 
 % Find max "amplitude" robot
@@ -82,12 +89,13 @@ if ~isempty(ridge_robot_idx) && length(ridge_robot_idx) == 1
         n_robots_right = sum(((Theta_d-pi)*ones(1,N) <= O_maxToRobots) & (O_maxToRobots < Theta_d*ones(1,N))); 
         n_robots_left = sum((Theta_d*ones(1,N)<O_maxToRobots) | (O_maxToRobots< (Theta_d-pi)*ones(1,N))); 
     end
-    if n_robots_right>0 && n_robots_left>0
+    N_sided = floor((N-2)/2)-2;
+    if n_robots_right>N_sided && n_robots_left>N_sided
         Vf = [x(ridge_robot_idx)-x(max_robot_idx), y(ridge_robot_idx)-y(max_robot_idx)];
         Vm = sqrt(sum(Vf.^2));
         Vfx=Vf(1)/Vm;
         Vfy=Vf(2)/Vm;
-    elseif n_robots_right>0
+    elseif n_robots_right>N_sided
         switch NRobot
             case max_robot_idx
                 Vfx = 0;
@@ -100,7 +108,7 @@ if ~isempty(ridge_robot_idx) && length(ridge_robot_idx) == 1
                 Vfx=Vf(1)/Vm;
                 Vfy=Vf(2)/Vm;
         end
-    elseif n_robots_left>0 
+    elseif n_robots_left>N_sided
         switch NRobot
             case max_robot_idx
                 Vfx = 0;

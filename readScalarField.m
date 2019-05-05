@@ -108,6 +108,22 @@ elseif ScalarFieldSelection == 4
     y4_m=0;
     scalarFunction = @(x,y) m4_height.*(m4_rolloff.*((x-x4_m).^2+(y-y4_m).^2)+1);
     Z = scalarFunction(a,b);
+elseif ScalarFieldSelection ==5
+    cshift = [10 10]; 
+    scaling = 0.5;
+    x = round(((-a/(scaling*1000))+cshift(2)/1000)*100)/100;
+    y = round(((-b/(scaling*1000))+cshift(2)/1000)*100)/100;
+
+    ridge_half_value = 1.5;
+    slope_y = .075;
+    slope_x = .075;
+
+    x1=roots([6 0 0 (-6*y) 2 (-2*x)]);
+    x1=real(x1(imag(x1)<=0.00001));
+    d=real(min(((x-x1).^2+(y-x1.^3).^2).^.5));
+    x = x - cshift(2)/1000;
+    y = y - cshift(1)/1000;
+    Z = real(100*(slope_y*y+1).*(slope_x*x+1)./((d./ridge_half_value).^2+1));
 else
     scalarFunction = @(x,y) 0;
     error(sprintf('Scalar Field Selection %d is not defined - check readScalarField.m',int32(ScalarFieldSelection)))
