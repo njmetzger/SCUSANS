@@ -69,7 +69,7 @@ end
 % Resample simulation data to have uniform time step. Use linear
 % interpolation to find intermediate values.
 % desiredNumFrames=numel(simOut.simout.Time);
-desiredFPS=10;
+desiredFPS=1;
 desiredNumFrames=desiredFPS*SIM_TIME;
 uniform_time=linspace(0,max(simOut.simout.Time),desiredNumFrames);
 resamp_data=resample(simOut.simout,uniform_time);
@@ -149,9 +149,12 @@ for i=1:size(simOut.simout.Data,1)-1
         for k = 1:NUM_ROBOTS
             d_from_max(k) = sqrt( ( Robot_Data(max_robot_i).x(i)-Robot_Data(k).x(i) )^2 + ( Robot_Data(max_robot_i).y(i)-Robot_Data(k).y(i) )^2 );
             delta_z_from_max(k) = Sensor_Value(max_robot_i)-Sensor_Value(k);
-            amp(k)= d_from_max(k)/delta_z_from_max(k);
+            if delta_z_from_max(k) < RidgeBuffer
+                amp(k)=0;
+            else
+                amp(k)= d_from_max(k)/delta_z_from_max(k);
+            end
         end
-        amp(Sensor_Value > Sensor_Value(max_robot_i)- RIDGE_BUFFER) =0; 
         ridge_robot_idx=find(amp==max(amp));
         if length(ridge_robot_idx)>1
             ridge_robot_idx  =ridge_robot_idx(1);
@@ -170,9 +173,12 @@ for i=1:size(simOut.simout.Data,1)-1
         for k = 1:NUM_ROBOTS
             d_from_min(k) = sqrt( ( Robot_Data(min_robot_i).x(i)-Robot_Data(k).x(i) )^2 + ( Robot_Data(min_robot_i).y(i)-Robot_Data(k).y(i) )^2 );
             delta_z_from_min(k) = Sensor_Value(k)-Sensor_Value(min_robot_i);
-            amp(k)= d_from_min(k)/delta_z_from_min(k);
+            if delta_z_from_min(k) < TrenchBuffer
+                amp(k)=0;
+            else
+                amp(k)= d_from_min(k)/delta_z_from_min(k);
+            end
         end
-        amp(Sensor_Value < Sensor_Value(min_robot_i)+RIDGE_BUFFER) =0; 
         trench_robot_idx=find(amp==max(amp));
         if length(trench_robot_idx)>1
             trench_robot_idx  =trench_robot_idx(1);
@@ -188,8 +194,18 @@ for i=1:size(simOut.simout.Data,1)-1
         addpoints(h_line(end),mx,my,mz+50);
     end
     title(strcat('Time = ',  num2str(time(i))))
+    for j = 1:10
+        RobotParams(4*j-3) = Robot_Data(j).x(i);
+        RobotParams(4*j-2) = Robot_Data(j).y(i);
+        RobotParams(4*j-1) = 0;
+        RobotParams(4*j) = Sensor_Value(j);
+    end
     drawnow limitrate
     % pause(dt(i));
+    Va =SwarmSimAttract(RobotParams, 1, 10000);
+    Voa =SwarmSimObstacleAvoid(RobotParams, 1, 1000, 25)
+    [Vrf] = SwarmSimFollowRidge(RobotParams, 1,1000,5)
+    V = 100*Voa+2.5*Va+Vrf
     F(i) = getframe(gcf);
     writeVideo(v,F(i))
 end
