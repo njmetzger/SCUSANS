@@ -1,5 +1,5 @@
 function Swarm_Robot_Test_Sim(NUM_ROBOTS,Sim_Time,Sense_Range,AvoidanceRange,...
-    DesValue,CONTOUR_BUFFER,RIDGE_BUFFER,GoTo,ScalarFieldSelection,behavior,x_init,y_init,...
+    DesValue,CONTOUR_BUFFER,GoTo,ScalarFieldSelection,behavior,x_init,y_init,...
     radius_init,isExp, robots,base)
 % SWARM_ROBOT_TEST_SIM - < Setup and initialization utility for running the
 % swarm simulator.>
@@ -17,7 +17,7 @@ if ScalarFieldSelection == 4
     FIELD_WIDTH=5;
 elseif ScalarFieldSelection == 5
     FIELD_WIDTH=1500;
-else 
+else
     FIELD_WIDTH=300;
 end
 
@@ -37,7 +37,7 @@ else
 end
 
 % Create system with that number of robots
-[h_newsys , simName] = buildSimModel(NUM_ROBOTS,SIM_TIME, FIELD_WIDTH, SensorRange, AvoidRange, DesiredValue,CONTOUR_BUFFER,RIDGE_BUFFER,ScalarFieldSelection,x_init,y_init,radius_init,isExp,robots,base);
+[h_newsys , simName] = buildSimModel(NUM_ROBOTS,SIM_TIME, FIELD_WIDTH, SensorRange, AvoidRange, DesiredValue,CONTOUR_BUFFER,ScalarFieldSelection,x_init,y_init,radius_init,isExp,robots,base);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -120,7 +120,7 @@ else
         end
     end
 end
-surf(X,Y,Z);  
+surf(X,Y,Z);
 view([0 90])
 axis([-FIELD_WIDTH FIELD_WIDTH -FIELD_WIDTH FIELD_WIDTH])
 hold on
@@ -132,80 +132,64 @@ hold off
 for i=1:numel(Robot_Data)
     h_line(i)=animatedline('Marker','o','MarkerFaceColor',cmap(i,:),'LineWidth',3,'MaximumNumPoints',1);
 end
-if strcmp(behavior,'Ridge Follow') || strcmp(behavior,'Trench Follow')
-    h_line(length(h_line)+1) = animatedline('Marker','o','MarkerFaceColor','k','LineWidth',3,'MaximumNumPoints',2);
-    h_line(length(h_line)+1) = animatedline('Marker','o','MarkerFaceColor','w','LineWidth',3,'MaximumNumPoints',1);
-end
+
 % Animate the simulation results
 for i=1:size(simOut.simout.Data,1)-1
     
     % Update position points for each robot
+    for n = 1:length(h_line)
+        clearpoints(h_line(n))
+    end
     for k=1:NUM_ROBOTS
         addpoints(h_line(k),Robot_Data(k).x(i),Robot_Data(k).y(i),(Robot_Data(k).sensor_value(i)+50));  % can we add in the z-value to the plot here?
-        Sensor_Value(k)=Robot_Data(k).sensor_value(i);    
+        Sensor_Value(k)=Robot_Data(k).sensor_value(i);
+        xs(k) = Robot_Data(k).x(i);
+        ys(k) = Robot_Data(k).y(i);
     end
     if strcmp(behavior,'Ridge Follow')
-        max_robot_i=find(Sensor_Value==max(Sensor_Value));
-        for k = 1:NUM_ROBOTS
-            d_from_max(k) = sqrt( ( Robot_Data(max_robot_i).x(i)-Robot_Data(k).x(i) )^2 + ( Robot_Data(max_robot_i).y(i)-Robot_Data(k).y(i) )^2 );
-            delta_z_from_max(k) = Sensor_Value(max_robot_i)-Sensor_Value(k);
-            if delta_z_from_max(k) < RidgeBuffer
-                amp(k)=0;
-            else
-                amp(k)= d_from_max(k)/delta_z_from_max(k);
+        for j = 1:NUM_ROBOTS
+            RobotParams(4*j-3) = Robot_Data(j).x(i);
+            RobotParams(4*j-2) = Robot_Data(j).y(i);
+            RobotParams(4*j-1) = 0;
+            RobotParams(4*j) = Sensor_Value(j);
+        end
+        k=k+1;
+        while sum(~isnan(Sensor_Value)) >2
+            max_robot_i=find(Sensor_Value==max(Sensor_Value));
+            if length(max_robot_i)>1
+                max_robot_i = max_robot_i(1);
             end
-        end
-        ridge_robot_idx=find(amp==max(amp));
-        if length(ridge_robot_idx)>1
-            ridge_robot_idx  =ridge_robot_idx(1);
-        end
-        mx= Robot_Data(max_robot_i).x(i);
-        my= Robot_Data(max_robot_i).y(i);
-        mz= Robot_Data(max_robot_i).sensor_value(i);
-        mxr= Robot_Data(ridge_robot_idx).x(i);
-        myr= Robot_Data(ridge_robot_idx).y(i);
-        mzr= Robot_Data(ridge_robot_idx).sensor_value(i);
-        addpoints(h_line(end-1),mx,my,mz+50);
-        addpoints(h_line(end-1),mxr,myr,mzr+50);
-        addpoints(h_line(end),mx,my,mz+50);
-    elseif strcmp(behavior,'Trench Follow')
-        min_robot_i=find(Sensor_Value==min(Sensor_Value));
-        for k = 1:NUM_ROBOTS
-            d_from_min(k) = sqrt( ( Robot_Data(min_robot_i).x(i)-Robot_Data(k).x(i) )^2 + ( Robot_Data(min_robot_i).y(i)-Robot_Data(k).y(i) )^2 );
-            delta_z_from_min(k) = Sensor_Value(k)-Sensor_Value(min_robot_i);
-            if delta_z_from_min(k) < TrenchBuffer
-                amp(k)=0;
-            else
-                amp(k)= d_from_min(k)/delta_z_from_min(k);
+            for m = 1:NUM_ROBOTS
+                d_from_max(m) = sqrt( ( xs(max_robot_i)-xs(m) ).^2 + ( ys(max_robot_i)-ys(m)).^2 );
             end
+            [Vrf,rs] = SwarmSimFollowRidge(RobotParams, max_robot_i,SensorRange);
+            mx= Robot_Data(max_robot_i).x(i);
+            my= Robot_Data(max_robot_i).y(i);
+            mz= Robot_Data(max_robot_i).sensor_value(i);
+            if max(d_from_max)< SensorRange
+                mxr= max(d_from_max)*Vrf(1)+mx; 
+                myr= max(d_from_max)*Vrf(2)+my;
+            else
+                mxr= SensorRange*Vrf(1)+mx; 
+                myr= SensorRange*Vrf(2)+my;
+            end
+            mzr= readScalarField(mxr,myr,ScalarFieldSelection);
+            
+            if k+1>length(h_line)
+                h_line(k) = animatedline('Marker','o','MarkerFaceColor','k','LineWidth',3,'MaximumNumPoints',2);
+                h_line(k+1) = animatedline('Marker','o','MarkerFaceColor','w','LineWidth',3,'MaximumNumPoints',1);
+            end
+            addpoints(h_line(k),mx,my,mz+50);
+            addpoints(h_line(k),mxr,myr,mzr+50);
+            addpoints(h_line(k+1),mx,my,mz+50);
+            Sensor_Value(d_from_max<=SensorRange) =nan;
+            k=k+2;
         end
-        trench_robot_idx=find(amp==max(amp));
-        if length(trench_robot_idx)>1
-            trench_robot_idx  =trench_robot_idx(1);
-        end
-        mx= Robot_Data(min_robot_i).x(i);
-        my= Robot_Data(min_robot_i).y(i);
-        mz= Robot_Data(min_robot_i).sensor_value(i);
-        mxr= Robot_Data(trench_robot_idx).x(i);
-        myr= Robot_Data(trench_robot_idx).y(i);
-        mzr= Robot_Data(trench_robot_idx).sensor_value(i);
-        addpoints(h_line(end-1),mx,my,mz+50);
-        addpoints(h_line(end-1),mxr,myr,mzr+50);
-        addpoints(h_line(end),mx,my,mz+50);
     end
     title(strcat('Time = ',  num2str(time(i))))
-    for j = 1:10
-        RobotParams(4*j-3) = Robot_Data(j).x(i);
-        RobotParams(4*j-2) = Robot_Data(j).y(i);
-        RobotParams(4*j-1) = 0;
-        RobotParams(4*j) = Sensor_Value(j);
-    end
     drawnow limitrate
     % pause(dt(i));
-    Va =SwarmSimAttract(RobotParams, 1, 10000);
-    Voa =SwarmSimObstacleAvoid(RobotParams, 1, 1000, 25)
-    [Vrf] = SwarmSimFollowRidge(RobotParams, 1,1000,5)
-    V = 100*Voa+2.5*Va+Vrf
+    
     F(i) = getframe(gcf);
     writeVideo(v,F(i))
 end
@@ -236,7 +220,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% buildSimModel()
-function [h_newsys , simName] = buildSimModel(N, SIM_TIME, FIELD_WIDTH, SensorRange, AvoidRange, DesiredValue, CONTOUR_BUFFER,RIDGE_BUFFER,ScalarFieldSelection,x_init,y_init,radius_init,isExp,robots,base)
+function [h_newsys , simName] = buildSimModel(N, SIM_TIME, FIELD_WIDTH, SensorRange, AvoidRange, DesiredValue, CONTOUR_BUFFER,ScalarFieldSelection,x_init,y_init,radius_init,isExp,robots,base)
 % Script for generating simulink model for N robots
 
 % Define system name
@@ -262,7 +246,6 @@ set_param(strcat(base,'/Robot 1 Behavior/Sensor Range'),'Value',num2str(SensorRa
 set_param(strcat(base,'/Robot 1 Behavior/Avoid Range'),'Value',num2str(AvoidRange));
 set_param(strcat(base,'/Robot 1 Behavior/Desired Value'),'Value',num2str(DesiredValue));
 set_param(strcat(base,'/Robot 1 Behavior/Contour Buffer'), 'Value',num2str(CONTOUR_BUFFER));
-set_param(strcat(base,'/Robot 1 Behavior/Ridge Buffer'), 'Value',num2str(RIDGE_BUFFER));
 set_param(strcat(base,'/Robot 1 SimResponse/ScalarFieldSelection'),'Value',num2str(ScalarFieldSelection));
 
 % Construct total system of N robots and link blocks
@@ -290,7 +273,7 @@ for i=1:N
         addBlockAndSpace(base_model_SR, new_model_SR,vert_spacing,0,i )
         RS_handles= get_param(new_model_SR, 'PortHandles');
         add_line('Swarm_Robot_N',OT_handles.Outport(i),RS_handles.Inport(1));
-
+        
         %Create Signal Selector for each robot
         base_model_ss = strcat(base,'/Signal_Select');
         new_model_ss = sprintf('Swarm_Robot_N/Signal_Select_%d',i);
@@ -298,21 +281,21 @@ for i=1:N
         SS_handles{i}= get_param(new_model_ss, 'PortHandles');
         add_line('Swarm_Robot_N',RS_handles.Outport(1),SS_handles{i}.Inport(1));
     end
-
-
+    
+    
     %% Create new "Robot X Behavior" block
     base_model=strcat(base,'/Robot 1 Behavior');
     behavior_model=sprintf('Swarm_Robot_N/Robot %i Behavior',i)
     addBlockAndSpace(base_model, behavior_model,vert_spacing, 0, i )
-
+    
     h_behavior{i} = get_param(behavior_model,'PortHandles');
-
+    
     %% Create new "Robot X Response" block
     if isExp
         base_model=strcat(base,'/Robot 1 ExpResponse');
         response_model=sprintf('Swarm_Robot_N/Robot %i ExpResponse',i);
         addBlockAndSpace(base_model, response_model,vert_spacing, 0, i )
-
+        
         b_behavior{i} = get_param(response_model,'PortHandles');
         add_line('Swarm_Robot_N', SS_handles{i}.Outport(1), b_behavior{i}.Inport(2));
         pos=get_param(response_model,'position');
@@ -320,36 +303,36 @@ for i=1:N
         base_model=strcat(base,'/Robot 1 SimResponse');
         response_model=sprintf('Swarm_Robot_N/Robot %i SimResponse',i);
         addBlockAndSpace(base_model, response_model,vert_spacing, 0, i )
-
+        
         b_behavior{i} = get_param(response_model,'PortHandles');
         pos=get_param(response_model,'position');
-
+        
     end
-
+    
     %% Create new "Robot X" (robot num) source block
     base_model=strcat(base,'/Robot 1');
     new_model=sprintf('Swarm_Robot_N/Robot %i',i)
     addBlockAndSpace(base_model, new_model,vert_spacing, 0, i )
-
+    
     set_param(new_model,'Value',num2str(i));
-
+    
     h_robot_num{i} = get_param(new_model,'PortHandles');
-
+    
     % Connect robot num to behavior block
     add_line('Swarm_Robot_N',h_robot_num{i}.Outport(1),h_behavior{i}.Inport(2));
-
-
-    %% Connect communication blocks 
+    
+    
+    %% Connect communication blocks
     % Connect robot behavior block to robot response block
     add_line('Swarm_Robot_N', h_behavior{i}.Outport(1), b_behavior{i}.Inport(1));
-
+    
     %Add communication blocks for experiment robots
     if isExp
         new_model = sprintf('Swarm_Robot_N/Robot %d ExpResponse/Robot_command', i);
         set_param(new_model, 'robotName', robots(i))
         CB_handles = get_param(new_model, 'PortHandles');
     end
-
+    
 end
 
 % Add Mux block for all robot signals
@@ -409,7 +392,7 @@ if ~isExp
             % set initial conditions as center point and circle:
             center_point_x= x_init;
             center_point_y= y_init;
-            radius_circle= radius_init; 
+            radius_circle= radius_init;
             theta_offset= 2*pi/N;
             for i= 1:N
                 x(i) = center_point_x + radius_circle*cos(i*theta_offset);
@@ -417,10 +400,10 @@ if ~isExp
                 initialCondition{i}=sprintf('[%g %g 0]',x(i),y(i));
                 set_param(['Swarm_Robot_N/Robot ',num2str(i),' SimResponse/Initial Conditions'],'Value',initialCondition{i})
             end
-
+            
         case 'Set to Random'
             disp('Setting initial conditions to random location on interval')
-
+            
             for i=1:N
                 rand_width=FIELD_WIDTH*.9;
                 x(i)=rand(1)*(2*rand_width)-rand_width;
@@ -431,14 +414,14 @@ if ~isExp
         case 'Select Manually'
             disp('Opening GUI interface for selection')
             fig=figure
-
+            
             % First plot scalar field
             ax=gca;
             ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
             ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
             cmap = hsv(N);
             title('Click to select robot initial positions')
-
+            
             res=100;
             xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
             ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
@@ -455,7 +438,7 @@ if ~isExp
             surf(X,Y,Z);
             view([0 90])
             hold on
-
+            
             for i=1:N
                 [x(i),y(i)] = ginput(1);
                 z(i)=readScalarField(x(i),y(i),ScalarFieldSelection);
@@ -517,9 +500,9 @@ y_PI_ave= zeros(NUM_ROBOTS, 1);
 %avg_concentration= zeros(NUM_ROBOTS,1);
 
 for i= 1:NUM_ROBOTS
-    x_PI_current= x_PI(i,:);
+    x_PI_current= x_PI(:,i);
     x_PI_ave(i,1)= mean(x_PI_current);
-    y_PI_current= y_PI(i,:);
+    y_PI_current= y_PI(:,i);
     y_PI_ave(i,1)= mean(y_PI_current);
     %avg_concentration(i,1)= readScalarField(x_PI_ave(i,1), y_PI_ave(i,1));
 end
@@ -606,13 +589,13 @@ switch behavior
     case 'Go To'
         figure()
         hold on
-        robot_legend = {}; 
-        xs = zeros(1,NUM_ROBOTS); 
+        robot_legend = {};
+        xs = zeros(1,NUM_ROBOTS);
         ys = zeros(1,NUM_ROBOTS);
         for i=1:NUM_ROBOTS
             leg_str1= 'Robot Number  ';
             rob_num_legend= num2str(i);
-            robot_legend{i} = strcat(leg_str1,leg_str1); 
+            robot_legend{i} = strcat(leg_str1,leg_str1);
             %legend_label= strcat(leg_str1, rob_num_legend);
             ps(i) = plot(Robot_Data(i).x, Robot_Data(i).y,'LineWidth',2);
             plot(Robot_Data(i).x(1), Robot_Data(i).y(1), 'kx');
@@ -643,19 +626,19 @@ for i=1:NUM_ROBOTS
 end
 contour3(X,Y,Z,15)
 view(-45,45)
-%surf(X,Y,Z)
+%surf(X,Y,Z) 
 title ('Time History of Robot Positions','fontsize',12), xlabel('X (m)','fontsize',12), ylabel('Y (m)','fontsize',12),zlabel('Sensor Value','fontsize',12)
 hold off
 end
 
 function [] = addBlockAndSpace(base_model, new_model,vert_spacing, hor_spacing, i )
-    add_block(base_model, new_model)
-    pos=get_param(new_model,'position');
-    pos(1)=pos(1)-hor_spacing; 
-    pos(3)=pos(3)-hor_spacing;
-    pos(2)=pos(2)-vert_spacing*(i-1);
-    pos(4)=pos(4)-vert_spacing*(i-1);
-    set_param(new_model,'position',pos);
+add_block(base_model, new_model)
+pos=get_param(new_model,'position');
+pos(1)=pos(1)-hor_spacing;
+pos(3)=pos(3)-hor_spacing;
+pos(2)=pos(2)-vert_spacing*(i-1);
+pos(4)=pos(4)-vert_spacing*(i-1);
+set_param(new_model,'position',pos);
 end
 
 

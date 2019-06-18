@@ -22,7 +22,7 @@ function varargout = SCUSANS_GUI(varargin)
 
 % Edit the above text to modify the response to help SCUSANS_GUI
 
-% Last Modified by GUIDE v2.5 04-May-2019 14:12:23
+% Last Modified by GUIDE v2.5 18-Jun-2019 15:40:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -342,7 +342,6 @@ SENSOR_RANGE= str2double(handles.SensorRange_edit.String);
 AVOID_RANGE= str2double(handles.AvoidanceRange_edit.String);
 DESIRED_VALUE= str2double(handles.DesiredContour_edit.String);
 CONTOUR_BUFFER= str2double(handles.contourBuffer_edit.String);
-RIDGE_BUFFER= str2double(handles.ridgeBuffer_edit.String);
 % ROBOT_SPEED= str2double(handles.robSpeed_edit.String); 
 
 x_init_center= str2double(handles.initCond_centerX_edit.String); 
@@ -397,7 +396,7 @@ elseif handles.SelectTestbedRB.Value
     NUM_ROBOTS = length(robots);
 end
 % run simulation: 
-Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE,CONTOUR_BUFFER,RIDGE_BUFFER,GoTo_Coords,ScalarFieldSelection,behavior,x_init_center,y_init_center,init_radius,isExp, robots,base) 
+Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE,CONTOUR_BUFFER,GoTo_Coords,ScalarFieldSelection,behavior,x_init_center,y_init_center,init_radius,isExp, robots,base) 
 
 function contourBuffer_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to contourBuffer_edit (see GCBO)
@@ -637,26 +636,6 @@ function goTo_Y_Coord_edit_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function goTo_Y_Coord_edit_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to goTo_Y_Coord_edit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-function ridgeBuffer_edit_Callback(hObject, eventdata, handles)
-% hObject    handle to ridgeBuffer_edit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --- Executes during object creation, after setting all properties.
-function ridgeBuffer_edit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to ridgeBuffer_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
