@@ -22,7 +22,7 @@ function varargout = SCUSANS_GUI(varargin)
 
 % Edit the above text to modify the response to help SCUSANS_GUI
 
-% Last Modified by GUIDE v2.5 18-Jun-2019 15:40:53
+% Last Modified by GUIDE v2.5 24-Jun-2019 18:25:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -56,6 +56,7 @@ handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
 set(handles.ExpRobotSelect,'Visible','off')
+set(handles.ParSimVersion,'Visible','off')
 
 % UIWAIT makes SCUSANS_GUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -302,14 +303,16 @@ function runSim_PB_Callback(hObject, eventdata, handles)
 base = handleVersion(handles);
 
 % set parameter values for switches based off behavior checkboxes 
-set_param(strcat(base,'/Robot 1 Behavior/Attract_Switch'),'sw',num2str(handles.cbox_Attract.Value))
-set_param(strcat(base,'/Robot 1 Behavior/Disperse_Switch'),'sw',num2str(handles.cbox_Disperse.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FindMin_Switch'),'sw',num2str(handles.cbox_FindMin.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FindMax_Switch'),'sw',num2str(handles.cbox_FindMax.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowRidge_Switch'),'sw',num2str(handles.cbox_RidgeFollow.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowTrench_Switch'),'sw',num2str(handles.cbox_TrenchFollow.Value))
-set_param(strcat(base,'/Robot 1 Behavior/GoTo_Switch'),'sw',num2str(handles.cbox_GoTo.Value))
+%set_param('untitled/Unit Delay','commented','on')
+set_param(strcat(base,'/Robot 1 Behavior/Attract'),'commented',mod(handles.cbox_Attract.Value+1,2))
+set_param(strcat(base,'/Robot 1 Behavior/Disperse'),'commented',mod(handles.cbox_Disperse.Value+1,2))
+set_param(strcat(base,'/Robot 1 Behavior/Find Min'),'commented',mod(handles.cbox_FindMin.Value+1,2))
+set_param(strcat(base,'/Robot 1 Behavior/Find Max'),'commented',mod(handles.cbox_FindMax.Value+1,2))
+% set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
+% set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
+% set_param(strcat(base,'/Robot 1 Behavior/FollowRidge_Switch'),'sw',num2str(handles.cbox_RidgeFollow.Value))
+% set_param(strcat(base,'/Robot 1 Behavior/FollowTrench_Switch'),'sw',num2str(handles.cbox_TrenchFollow.Value))
+set_param(strcat(base,'/Robot 1 Behavior/Go To'),'commented',mod(handles.cbox_GoTo.Value+1,2))
 
 % set behavior switch used to plot time histories of robots: 
 if handles.cbox_FindMin.Value && handles.cbox_FindMax.Value 
@@ -335,20 +338,18 @@ elseif handles.cbox_TrenchFollow.Value
 else 
     behavior = 'Null' 
 end 
-
+SimParams = {};
 % set simulation parameters based off text edit boxes: 
-SIM_TIME= str2double(handles.SimRunTime_edit.String);
-SENSOR_RANGE= str2double(handles.SensorRange_edit.String);
-AVOID_RANGE= str2double(handles.AvoidanceRange_edit.String);
-DESIRED_VALUE= str2double(handles.DesiredContour_edit.String);
-CONTOUR_BUFFER= str2double(handles.contourBuffer_edit.String);
-% ROBOT_SPEED= str2double(handles.robSpeed_edit.String); 
-
-x_init_center= str2double(handles.initCond_centerX_edit.String); 
-y_init_center= str2double(handles.initCond_centerY_edit.String); 
-init_radius= str2double(handles.initCond_radius_edit.String); 
-GoTo_Coords = [str2double(handles.goTo_X_Coord_edit.String), str2double(handles.goTo_X_Coord_edit.String)]; 
-
+SimParams.SENSOR_RANGE= str2double(handles.SensorRange_edit.String);
+SimParams.AVOID_RANGE= str2double(handles.AvoidanceRange_edit.String);
+SimParams.DESIRED_VALUE= str2double(handles.DesiredContour_edit.String);
+SimParams.CONTOUR_BUFFER= str2double(handles.contourBuffer_edit.String);
+SimParams.init.x_init_center= str2double(handles.initCond_centerX_edit.String);
+SimParams.init.y_init_center= str2double(handles.initCond_centerY_edit.String);
+SimParams.init.init_radius= str2double(handles.initCond_radius_edit.String); 
+SimParams.GoTo_Coords = [str2double(handles.goTo_X_Coord_edit.String), str2double(handles.goTo_X_Coord_edit.String)]; 
+SimParams.MakeVideo = handles.MakeVideoCB.Value;
+SimParams.SaveVideo = handles.SaveVideoCB.Value;
 %because robot_speed is not a parameter used inside swarm_robot_test_sim,
 %update robot speed here:
 
@@ -377,12 +378,12 @@ end
 
 if handles.SelectSimRB.Value
     disp('sim')
-    robots = []; 
-    isExp = false;
-    NUM_ROBOTS= str2double(handles.numRobots_edit.String);
+    trialType = 1;
+    SimParams.NUM_ROBOTS= str2double(handles.numRobots_edit.String);
+    SimParams.SIM_TIME= str2double(handles.SimRunTime_edit.String);
 elseif handles.SelectTestbedRB.Value 
     disp('exp')
-    isExp = true; 
+    trialType = 3; 
     all_robots = [string('canary'), string('celeste'),...
         string('pacific-blue'), string('pink'), string('redwood'), ...
     string('schweinefleisch'), string('sunglow'), string('tidal'), ...
@@ -392,11 +393,18 @@ elseif handles.SelectTestbedRB.Value
         handles.cbox_Redwood.Value, handles.cbox_Schwein.Value,...
         handles.cbox_Sunglow.Value,handles.cbox_Tidal.Value,...
         handles.cbox_Watermelon.Value,handles.cbox_Wisteria.Value];
-    robots = all_robots(logical(robot_select));
-    NUM_ROBOTS = length(robots);
+    SimParams.robots = all_robots(logical(robot_select));
+    SimParams.NUM_ROBOTS = length(SimParams.robots);
+    SimParams.SIM_TIME= str2double(handles.SimRunTime_edit.String);
+elseif handles.SelectParallelSimRB.Value
+    disp('parsim')
+    trialType= 2; 
+    SimParams.NUM_ROBOTS = str2num(handles.ParallelNRobots_edit.String); 
+    SimParams.SIM_TIME= str2num(handles.ParallelTimes_edit.String);
+    SimParams.NumTrials = str2double(handles.ParallelNTrials_edit.String);
 end
 % run simulation: 
-Swarm_Robot_Test_Sim(NUM_ROBOTS,SIM_TIME,SENSOR_RANGE,AVOID_RANGE,DESIRED_VALUE,CONTOUR_BUFFER,GoTo_Coords,ScalarFieldSelection,behavior,x_init_center,y_init_center,init_radius,isExp, robots,base) 
+Swarm_Robot_Test_Sim(SimParams,ScalarFieldSelection,behavior,trialType,base) 
 
 function contourBuffer_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to contourBuffer_edit (see GCBO)
@@ -559,7 +567,9 @@ function SelectSimRB_Callback(hObject, eventdata, handles)
 if handles.SelectSimRB.Value
     set(handles.ExpRobotSelect,'Visible','off')
     set(handles.numRobots_edit,'Enable','on')
+    set(handles.SimRunTime_edit,'Enable','on')
     set(handles.MLVersion_box,'Visible','on')
+    set(handles.ParSimVersion,'Visible','off')
 end
 
 % --- Executes on button press in SelectTestbedRB.
@@ -568,12 +578,30 @@ function SelectTestbedRB_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of SelectTestbedRB
 if handles.SelectTestbedRB.Value
     set(handles.ExpRobotSelect,'Visible','on')
     set(handles.numRobots_edit,'Enable','off')
+    set(handles.SimRunTime_edit,'Enable','on')
     set(handles.MLVersion_box,'Visible','off')
+    set(handles.ParSimVersion,'Visible','off')
 end
+
+
+
+% --- Executes on button press in SelectParallelSimRB.
+function SelectParallelSimRB_Callback(hObject, eventdata, handles)
+% hObject    handle to SelectParallelSimRB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+if handles.SelectParallelSimRB.Value
+    set(handles.ExpRobotSelect,'Visible','off')
+    set(handles.numRobots_edit,'Enable','off')
+    set(handles.SimRunTime_edit,'Enable','off')
+    set(handles.MLVersion_box,'Visible','on')
+    set(handles.ParSimVersion,'Visible','on')
+end
+
 
 %helper function to manage version 
 function [base] = handleVersion(handles)
@@ -644,3 +672,69 @@ function goTo_Y_Coord_edit_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+
+function ParallelTimes_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to ParallelTimes_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% --- Executes during object creation, after setting all properties.
+function ParallelTimes_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ParallelTimes_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function ParallelNRobots_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to ParallelNRobots_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% --- Executes during object creation, after setting all properties.
+function ParallelNRobots_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ParallelNRobots_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function ParallelNTrials_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to ParallelNTrials_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% --- Executes during object creation, after setting all properties.
+function ParallelNTrials_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ParallelNTrials_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% --- Executes on button press in SaveVideoCB.
+function SaveVideoCB_Callback(hObject, eventdata, handles)
+% hObject    handle to SaveVideoCB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% --- Executes on button press in MakeVideoCB.
+function MakeVideoCB_Callback(hObject, eventdata, handles)
+% hObject    handle to MakeVideoCB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

@@ -1,15 +1,10 @@
-function Swarm_Robot_Test_Sim(NUM_ROBOTS,Sim_Time,Sense_Range,AvoidanceRange,...
-    DesValue,CONTOUR_BUFFER,GoTo,ScalarFieldSelection,behavior,x_init,y_init,...
-    radius_init,isExp, robots,base)
+% function Swarm_Robot_Test_Sim(NUM_ROBOTS,Sim_Time,SensorRange,AvoidRange,...
+%     DesiredValue,CONTOUR_BUFFER,GoTo,ScalarFieldSelection,behavior,x_init,y_init,...
+%     radius_init,trialType, robots,base)
+function Swarm_Robot_Test_Sim(SimParams,ScalarFieldSelection,behavior,trialType,base)
 % SWARM_ROBOT_TEST_SIM - < Setup and initialization utility for running the
 % swarm simulator.>
 
-% Simulation parameters
-SIM_TIME=Sim_Time;
-
-SensorRange=Sense_Range;
-AvoidRange= AvoidanceRange;
-DesiredValue=DesValue;
 
 % Constants
 NUM_SIGNALS_PER_ROBOT=4;
@@ -21,23 +16,14 @@ else
     FIELD_WIDTH=300;
 end
 
-VideoFilename='findContour_12_6';
 
 % Setup matlab directory to run in current runFile folder
 runFileFunctionName=mfilename;
 runFilePath=mfilename('fullpath');
 BaseFolderPath = replace(runFilePath,runFileFunctionName,string(''));
 cd(BaseFolderPath);
+[~] = ConfigureProjectPath;
 
-% If video file already exists, append datetime data to its filename
-if exist([BaseFolderPath,filesep,VideoFilename,'.avi']) == 2
-    VideoFilename=[VideoFilename,'_',datestr(now,'yyyy-mm-dd'),'_',datestr(now,'HH_MM_SS'),'.avi'];
-else
-    VideoFilename=[VideoFilename,'.avi'];
-end
-
-% Create system with that number of robots
-[h_newsys , simName] = buildSimModel(NUM_ROBOTS,SIM_TIME, FIELD_WIDTH, SensorRange, AvoidRange, DesiredValue,CONTOUR_BUFFER,ScalarFieldSelection,x_init,y_init,radius_init,isExp,robots,base);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -49,169 +35,74 @@ end
 % profile on
 
 % Specify sim options and run simulation
-% myoptions = simset('SrcWorkspace','current','DstWorkspace','current');
-if isExp
-    myoptions = simset('Solver', 'FixedStepDiscrete', 'FixedStep', '0.1');
-    sim('Swarm_Robot_N',SIM_TIME,myoptions)
-else
-    myoptions = simset('Solver', 'FixedStepDiscrete', 'FixedStep', '0.1');
-    sim('Swarm_Robot_N',SIM_TIME,myoptions)
-end
-simOut.simout=simout;
 
-est_num_robots=size(simOut.simout.Data,2)/NUM_SIGNALS_PER_ROBOT;
-
-% Throw error if data size mis-matches desired number of robots
-if NUM_ROBOTS~=est_num_robots
-    error('Robot number and number of signals defined do not translate');
-end
-
-% Resample simulation data to have uniform time step. Use linear
-% interpolation to find intermediate values.
-% desiredNumFrames=numel(simOut.simout.Time);
-desiredFPS=1;
-desiredNumFrames=desiredFPS*SIM_TIME;
-uniform_time=linspace(0,max(simOut.simout.Time),desiredNumFrames);
-resamp_data=resample(simOut.simout,uniform_time);
-simOut.simout=resamp_data;
-
-% Extract individual robot data and organize into structure array
-for i=1:NUM_ROBOTS
-    Robot_Data(i).x=simOut.simout.Data(:,i*4-3);
-    Robot_Data(i).y=simOut.simout.Data(:,i*4-2);
-    Robot_Data(i).theta=simOut.simout.Data(:,i*4-1);
-    Robot_Data(i).sensor_value=simOut.simout.Data(:,i*4);
-end
-
-% Extract time vector
-time=simOut.simout.time;
-dt=diff(time);
-
-%% Plots robots positions
-
-% Setup videowriter
-v = VideoWriter(VideoFilename,'Motion JPEG AVI')
-% v.FrameRate = floor(numel(simOut.simout.time)/SIM_TIME);
-v.FrameRate=desiredFPS;
-v.Quality=75;
-open(v)
-F(numel(Robot_Data)) = struct('cdata',[],'colormap',[]);
-
-% Create unique color map for each robot
-cmap = hsv(numel(Robot_Data));
-
-% First plot scalar field
-figure(1)
-ax=gca;
-%Plot outside field with if robots exit field
-
-ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
-ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
-res=100;
-xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
-ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
-[X,Y] = meshgrid(xdivs,ydivs);
-if ScalarFieldSelection~=5
-    Z=readScalarField(X,Y,ScalarFieldSelection);
-else
-    for i =1:length(X)
-        for j =1:length(Y)
-            Z(i,j)=readScalarField(X(i,j),Y(i,j),ScalarFieldSelection);
-        end
-    end
-end
-surf(X,Y,Z);
-view([0 90])
-axis([-FIELD_WIDTH FIELD_WIDTH -FIELD_WIDTH FIELD_WIDTH])
-hold on
-[M,c] =contour3(X,Y,Z,[DesiredValue DesiredValue],'ShowText','on');
-c.LineWidth = 3;
-hold off
-
-% Create animated lines for each robot
-for i=1:numel(Robot_Data)
-    h_line(i)=animatedline('Marker','o','MarkerFaceColor',cmap(i,:),'LineWidth',3,'MaximumNumPoints',1);
-end
-
-% Animate the simulation results
-for i=1:size(simOut.simout.Data,1)-1
-    
-    % Update position points for each robot
-    for n = 1:length(h_line)
-        clearpoints(h_line(n))
-    end
-    for k=1:NUM_ROBOTS
-        addpoints(h_line(k),Robot_Data(k).x(i),Robot_Data(k).y(i),(Robot_Data(k).sensor_value(i)+50));  % can we add in the z-value to the plot here?
-        Sensor_Value(k)=Robot_Data(k).sensor_value(i);
-        xs(k) = Robot_Data(k).x(i);
-        ys(k) = Robot_Data(k).y(i);
-    end
-    if strcmp(behavior,'Ridge Follow')
-        for j = 1:NUM_ROBOTS
-            RobotParams(4*j-3) = Robot_Data(j).x(i);
-            RobotParams(4*j-2) = Robot_Data(j).y(i);
-            RobotParams(4*j-1) = 0;
-            RobotParams(4*j) = Sensor_Value(j);
-        end
-        k=k+1;
-        while sum(~isnan(Sensor_Value)) >2
-            max_robot_i=find(Sensor_Value==max(Sensor_Value));
-            if length(max_robot_i)>1
-                max_robot_i = max_robot_i(1);
-            end
-            for m = 1:NUM_ROBOTS
-                d_from_max(m) = sqrt( ( xs(max_robot_i)-xs(m) ).^2 + ( ys(max_robot_i)-ys(m)).^2 );
-            end
-            [Vrf,rs] = SwarmSimFollowRidge(RobotParams, max_robot_i,SensorRange);
-            mx= Robot_Data(max_robot_i).x(i);
-            my= Robot_Data(max_robot_i).y(i);
-            mz= Robot_Data(max_robot_i).sensor_value(i);
-            if max(d_from_max)< SensorRange
-                mxr= max(d_from_max)*Vrf(1)+mx; 
-                myr= max(d_from_max)*Vrf(2)+my;
-            else
-                mxr= SensorRange*Vrf(1)+mx; 
-                myr= SensorRange*Vrf(2)+my;
-            end
-            mzr= readScalarField(mxr,myr,ScalarFieldSelection);
+if trialType ==2
+    simulation_name = strcat(behavior,'_Parallel');
+    for t = 1:length(SimParams.SIM_TIME)
+        time = SimParams.SIM_TIME(t);
+        for r = 1:length(SimParams.NUM_ROBOTS)
+            Nrobots = SimParams.NUM_ROBOTS(r);
+            SimParamsi = SimParams;
+            SimParamsi.NUM_ROBOTS = Nrobots;
+            SimParamsi.SIM_TIME = time;
+            clear simIn_with_ICs
+            cfg.simulation_name = [simulation_name,'_R',num2str(Nrobots),'_T',num2str(time),'_N',num2str(SimParams.NumTrials)];
             
-            if k+1>length(h_line)
-                h_line(k) = animatedline('Marker','o','MarkerFaceColor','k','LineWidth',3,'MaximumNumPoints',2);
-                h_line(k+1) = animatedline('Marker','o','MarkerFaceColor','w','LineWidth',3,'MaximumNumPoints',1);
+            [h_newsys , simName] = buildSimModel(SimParamsi,FIELD_WIDTH, ScalarFieldSelection,trialType,base);
+            close_system(base,0);
+            set_param('Swarm_Robot_N','Solver', 'FixedStepDiscrete');
+            set_param('Swarm_Robot_N','FixedStep', '0.1')
+            save_system('Swarm_Robot_N');
+            for i = SimParams.NumTrials:-1:1
+                simIn(i) = Simulink.SimulationInput('Swarm_Robot_N');
+                simIn(i) = simIn(i).setModelParameter('StopTime',num2str(time));
+                
+                [simIn(i)] = SetRandomRobotInitialConditions(simIn(i), Nrobots, FIELD_WIDTH);
             end
-            addpoints(h_line(k),mx,my,mz+50);
-            addpoints(h_line(k),mxr,myr,mzr+50);
-            addpoints(h_line(k+1),mx,my,mz+50);
-            Sensor_Value(d_from_max<=SensorRange) =nan;
-            k=k+2;
+            out = parsim(simIn, 'ShowSimulationManager','on','ShowProgress','on','TransferBaseWorkspaceVariables','off');
+            %% Post - Processing
+            [min_t, max_t,avg_t,realtime_f] =AnalyzeTimingData(out,time,Nrobots);
+            min_tm(t,r) = min_t;
+            max_tm(t,r) = max_t;
+            avg_tm(t,r) = avg_t;
+            rt_fm(t,r) = realtime_f;
+            discript(t,r) = sprintf("NRobots=%d_Time=%d_N=%d",Nrobots,time,SimParams.NumTrials);
+            % save('attractR200_T100_test','min_tm','max_tm','avg_tm','rt_fm','discript')
+            [data] = ExtractRobotData(out,cfg,Nrobots);
+            PlotCompositeRobotData(data(1),ScalarFieldSelection,behavior,FIELD_WIDTH)
+            PlotCompositeRobotData(data,ScalarFieldSelection,behavior,FIELD_WIDTH)
+            if SimParams.MakeVideo
+                ProduceSimVideo(data,ScalarFieldSelection,behavior,FIELD_WIDTH,SimParams)
+            end
+            delete Swarm_Robot_N.slx
+            % Save simulation results
+            %if exist(fullfile(cd,'results',filesep,cfg.simulation_name,'.mat')) == 2
+            %    data_filename= fullfile(cd,'results',cfg.simulation_name,'_',[datestr(now,'yyyy-mm-dd'),'_',datestr(now,'HH_MM_SS')],'.mat');
+            %else
+            %    data_filename=fullfile(cd,'results',[cfg.simulation_name,'.mat']);
+            %end
+            %save(data_filename,'data');
         end
     end
-    title(strcat('Time = ',  num2str(time(i))))
-    drawnow limitrate
-    % pause(dt(i));
+    output_stats = fullfile(cd,'results',[behavior,':','R_',num2str(min(SimParams.NUM_ROBOTS)),'-',num2str(max(SimParams.NUM_ROBOTS)),':T_',num2str(min(SimParams.SIM_TIME)),'-',num2str(max(SimParams.SIM_TIME)),':N_',num2str(SimParams.NumTrials),'.mat']);
+    save(output_stats,'avg_tm','discript','max_tm','min_tm','rt_fm')
+else
+    % Create system with that number of robots
+    cfg.simulation_name = [behavior,'_R',num2str(SimParams.NUM_ROBOTS),'_T',num2str(SimParams.SIM_TIME)];
+    [h_newsys , simName] = buildSimModel(SimParams,FIELD_WIDTH, ScalarFieldSelection,trialType,base);
+    set_param('Swarm_Robot_N','Solver', 'FixedStepDiscrete');
+    set_param('Swarm_Robot_N','FixedStep', '0.1')
+    save_system('Swarm_Robot_N');
+    sim('Swarm_Robot_N',SimParams.SIM_TIME);
+    SimOut.simout = simout;
+    [data] = ExtractRobotData(SimOut,cfg,SimParams.NUM_ROBOTS);
+    if SimParams.MakeVideo
+        ProduceSimVideo(data,ScalarFieldSelection,behavior,FIELD_WIDTH,SimParams)
+    end
     
-    F(i) = getframe(gcf);
-    writeVideo(v,F(i))
+    %% Plot time history of robots
+    plotRobotHistory(data,SimParams,behavior,ScalarFieldSelection,FIELD_WIDTH);
 end
-
-% fig =figure
-% movie(fig,F,60)
-% for i=1:NUM_ROBOTS
-%     writeVideo(v,F(i));
-% end
-close(v)
-
-% profile viewer
-% Peformance_eval
-% % Get individual robot position history from Robot_Data
-%
-% %initialize variables
-%
-time=simOut.simout.time;
-
-%% Plot time history of robots
-plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,GoTo,behavior,X,Y,Z,ScalarFieldSelection);
-
 end
 
 
@@ -220,11 +111,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% buildSimModel()
-function [h_newsys , simName] = buildSimModel(N, SIM_TIME, FIELD_WIDTH, SensorRange, AvoidRange, DesiredValue, CONTOUR_BUFFER,ScalarFieldSelection,x_init,y_init,radius_init,isExp,robots,base)
+function [h_newsys , simName]= buildSimModel(SimParams,FIELD_WIDTH, ScalarFieldSelection,trialType,base)
 % Script for generating simulink model for N robots
 
 % Define system name
 simName='Swarm_Robot_N';
+N = SimParams.NUM_ROBOTS;
 
 % Default vertical spacing of blocks
 vert_spacing = -150;
@@ -239,23 +131,23 @@ h_newsys = new_system('Swarm_Robot_N');
 open_system(h_newsys);
 
 % Load the template "Robot Behavior" model
-load_system(base)
+open_system(base)
 
 % Set base robot parameters
-set_param(strcat(base,'/Robot 1 Behavior/Sensor Range'),'Value',num2str(SensorRange));
-set_param(strcat(base,'/Robot 1 Behavior/Avoid Range'),'Value',num2str(AvoidRange));
-set_param(strcat(base,'/Robot 1 Behavior/Desired Value'),'Value',num2str(DesiredValue));
-set_param(strcat(base,'/Robot 1 Behavior/Contour Buffer'), 'Value',num2str(CONTOUR_BUFFER));
+set_param(strcat(base,'/Robot 1 Behavior/Sensor Range'),'Value',num2str(SimParams.SENSOR_RANGE));
+set_param(strcat(base,'/Robot 1 Behavior/Avoid Range'),'Value',num2str(SimParams.AVOID_RANGE));
+set_param(strcat(base,'/Robot 1 Behavior/Desired Value'),'Value',num2str(SimParams.DESIRED_VALUE));
+set_param(strcat(base,'/Robot 1 Behavior/Contour Buffer'), 'Value',num2str(SimParams.CONTOUR_BUFFER));
 set_param(strcat(base,'/Robot 1 SimResponse/ScalarFieldSelection'),'Value',num2str(ScalarFieldSelection));
 
 % Construct total system of N robots and link blocks
-if isExp
+if trialType == 3
     rs = string('{');
-    for j = 1:length(robots)
+    for j = 1:length(SimParams.robots)
         if j ==1
-            rs = rs+ sprintf(string('''%s'''),robots(j));
+            rs = rs+ sprintf(string('''%s'''),SimParams.robots(j));
         else
-            rs = rs+ sprintf(',''%s''', robots(j));
+            rs = rs+ sprintf(',''%s''', SimParams.robots(j));
         end
     end
     rs = rs + '}';
@@ -264,9 +156,10 @@ if isExp
     set_param('Swarm_Robot_N/Optitrack', 'rigidBodyNames', rs)
     OT_handles= get_param('Swarm_Robot_N/Optitrack', 'PortHandles');
 end
+
 for i=1:N
     %% Add blocks for experiment if needed
-    if isExp
+    if trialType == 3
         %Create Signal Reshape for each robot
         base_model_SR = strcat(base,'/Signal_Reshape');
         new_model_SR = sprintf('Swarm_Robot_N/Signal_Reshape_%d',i);
@@ -285,13 +178,13 @@ for i=1:N
     
     %% Create new "Robot X Behavior" block
     base_model=strcat(base,'/Robot 1 Behavior');
-    behavior_model=sprintf('Swarm_Robot_N/Robot %i Behavior',i)
+    behavior_model=sprintf('Swarm_Robot_N/Robot %i Behavior',i);
     addBlockAndSpace(base_model, behavior_model,vert_spacing, 0, i )
     
     h_behavior{i} = get_param(behavior_model,'PortHandles');
     
     %% Create new "Robot X Response" block
-    if isExp
+    if trialType == 3
         base_model=strcat(base,'/Robot 1 ExpResponse');
         response_model=sprintf('Swarm_Robot_N/Robot %i ExpResponse',i);
         addBlockAndSpace(base_model, response_model,vert_spacing, 0, i )
@@ -311,7 +204,7 @@ for i=1:N
     
     %% Create new "Robot X" (robot num) source block
     base_model=strcat(base,'/Robot 1');
-    new_model=sprintf('Swarm_Robot_N/Robot %i',i)
+    new_model=sprintf('Swarm_Robot_N/Robot %i',i);
     addBlockAndSpace(base_model, new_model,vert_spacing, 0, i )
     
     set_param(new_model,'Value',num2str(i));
@@ -327,9 +220,9 @@ for i=1:N
     add_line('Swarm_Robot_N', h_behavior{i}.Outport(1), b_behavior{i}.Inport(1));
     
     %Add communication blocks for experiment robots
-    if isExp
+    if trialType == 3
         new_model = sprintf('Swarm_Robot_N/Robot %d ExpResponse/Robot_command', i);
-        set_param(new_model, 'robotName', robots(i))
+        set_param(new_model, 'robotName', SimParams.robots(i))
         CB_handles = get_param(new_model, 'PortHandles');
     end
     
@@ -381,7 +274,7 @@ add_line('Swarm_Robot_N',h_mux.Outport(1),h_simout.Inport(1),'autorouting','on')
 % set_param('Swarm_Robot_N/SimOut_Data','SaveFormat','Structure With Time')
 
 %% Define robot initial conditions
-if ~isExp
+if trialType == 1
     answer = questdlg('Select initial condition option?', ...
         'Initial Condition Options', ...
         'Use Default','Set to Random','Select Manually','Use Default');
@@ -390,9 +283,9 @@ if ~isExp
         case 'Use Default'
             disp('Using default initial conditions.')
             % set initial conditions as center point and circle:
-            center_point_x= x_init;
-            center_point_y= y_init;
-            radius_circle= radius_init;
+            center_point_x= SimParams.init.x_init_center;
+            center_point_y= SimParams.init.y_init_center;
+            radius_circle= SimParams.init.init_radius;
             theta_offset= 2*pi/N;
             for i= 1:N
                 x(i) = center_point_x + radius_circle*cos(i*theta_offset);
@@ -439,7 +332,7 @@ if ~isExp
             view([0 90])
             hold on
             
-            for i=1:N
+            for i=1:SimParams.NUM_ROBOTS
                 [x(i),y(i)] = ginput(1);
                 z(i)=readScalarField(x(i),y(i),ScalarFieldSelection);
                 plot3(x(i),y(i),z(i)+abs(z(i)*.2),'o','MarkerSize',10,'MarkerFaceColor',cmap(i,:),'MarkerEdgeColor','k')
@@ -453,184 +346,9 @@ end
 
 end
 
-%% plotRobotHistory()
-
-function [] = plotRobotHistory(Robot_Data, NUM_ROBOTS,time,CONTOUR_BUFFER,DesValue,GoTo,behavior,X,Y,Z,ScalarFieldSelection)
-
-% assignin('base','base_RobotData', Robot_Data)
-x_PI= zeros(length(Robot_Data(1).x),NUM_ROBOTS);
-y_PI= zeros(length(Robot_Data(1).y),NUM_ROBOTS);
-theta_PI= zeros(length(Robot_Data(1).theta),NUM_ROBOTS);
-sensor_value_PI = zeros(length(Robot_Data(1).sensor_value),NUM_ROBOTS);
-
-for i=1:NUM_ROBOTS
-    x_PI(:,i) = Robot_Data(i).x;
-    y_PI(:,i) = Robot_Data(i).y;
-    theta_PI(:,i)= Robot_Data(i).theta;
-    sensor_value_PI(:,i)= Robot_Data(i).sensor_value;
-end
-
-%Reevaluate X,Y,Z
-minx = min(min(min(X)),min(min(x_PI)));
-miny = min(min(min(Y)),min(min(y_PI)));
-maxx = max(max(max(X)),max(max(x_PI)));
-maxy = max(max(max(Y)),max(max(y_PI)));
-
-ax.XLim=[minx maxx];
-ax.YLim=[miny maxy];
-res=100;
-xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
-ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
-[X,Y] = meshgrid(xdivs,ydivs);
-if ScalarFieldSelection~=5
-    Z=readScalarField(X,Y,ScalarFieldSelection);
-else
-    for i =1:length(X)
-        for j = 1:length(Y)
-            Z(i,j)=readScalarField(X(i,j),Y(i,j),ScalarFieldSelection);
-        end
-    end
-end
 
 
-
-% Determine Average Position of swarm (change to centroid?)
-x_PI_ave= zeros(NUM_ROBOTS, 1);
-y_PI_ave= zeros(NUM_ROBOTS, 1);
-%avg_concentration= zeros(NUM_ROBOTS,1);
-
-for i= 1:NUM_ROBOTS
-    x_PI_current= x_PI(:,i);
-    x_PI_ave(i,1)= mean(x_PI_current);
-    y_PI_current= y_PI(:,i);
-    y_PI_ave(i,1)= mean(y_PI_current);
-    %avg_concentration(i,1)= readScalarField(x_PI_ave(i,1), y_PI_ave(i,1));
-end
-
-% figure()
-% plot(x_PI_ave, y_PI_ave)
-% Plot the sensor values of each robot to indicate the effectiveness of the
-% min/max finding behavior:
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-global_max_val= max(max(Z))*ones(length(time),1);
-global_min_val= min(min(Z))*ones(length(time),1);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-desired_contour_plot= DesValue*ones(length(time),1);
-positive_buffer_plot= desired_contour_plot + CONTOUR_BUFFER;
-negative_buffer_plot= desired_contour_plot - CONTOUR_BUFFER;
-legend_labels= cell(1, (NUM_ROBOTS+1));
-
-switch behavior
-    case 'Contour Following'
-        figure()
-        hold on
-        for i= 1:NUM_ROBOTS
-            leg_str1= 'Robot Number  ';
-            rob_num_legend= num2str(i);
-            legend_labels{1,i}= strcat(leg_str1, rob_num_legend);
-            plot(time, sensor_value_PI(:,i))
-        end
-        title('Sensor Value Readings','fontsize',12)
-        %plot the concentration at the mean position value
-        % plot(time, avg_concentration(:,1));
-        
-        % plot(time,global_max_val); legend('known maximum value') % plot known max if doing max files
-        % add the relevant legend label to the legend:
-        legend_labels{1,(NUM_ROBOTS+1)}= 'Desired Contour Value';
-        legend_labels{1,(NUM_ROBOTS+2)}= 'Buffer Limits';
-        %legend_labels{1,(NUM_ROBOTS+3)}= 'Negative Buffer Limit';
-        plot(time,desired_contour_plot,'k--');  % plot contour value
-        plot(time,positive_buffer_plot,'k-.');
-        plot(time,negative_buffer_plot,'k-.'); legend(legend_labels);
-        xlabel('Time (s)','fontsize',12)
-        ylabel('Sensor Value','fontsize',12)
-        hold off
-        
-        
-        % EvaluatePerformance(Robot_Data);
-        % ADD EVALUATION OF THE ACTUAL MAX FROM SIMULATION
-        % 1) get index of max sensor values
-        % 2) get x,y value at that index
-        % 3) evaluate readScalarField at that x,y and check that it's the same
-        
-    case 'Find Min'
-        figure()
-        hold on
-        for i= 1:NUM_ROBOTS
-            leg_str1= 'Robot Number  ';
-            rob_num_legend= num2str(i);
-            legend_labels{1,i}= strcat(leg_str1, rob_num_legend);
-            plot(time, sensor_value_PI(:,i))
-        end
-        title('Sensor Value Readings','fontsize',12)
-        % add reference for global min:
-        legend_labels{1,(NUM_ROBOTS+1)}= 'Known Global Minimum';
-        plot(time,global_min_val,'k--'); legend(legend_labels) ;% plot minimum value
-        xlabel('Time (s)','fontsize',12)
-        ylabel('Sensor Value','fontsize',12)
-    case 'Find Max'
-        % plot the individual robot concentrations:
-        figure()
-        hold on
-        for i= 1:NUM_ROBOTS
-            leg_str1= 'Robot Number  ';
-            rob_num_legend= num2str(i);
-            legend_labels{1,i}= strcat(leg_str1, rob_num_legend);
-            plot(time, sensor_value_PI(:,i))
-        end
-        title('Sensor Value Readings','fontsize',12)
-        % add reference for global max:
-        legend_labels{1,(NUM_ROBOTS+1)}= 'Known Global Maximum';
-        plot(time,global_max_val,'k--'); legend(legend_labels); % plot maximum value
-        xlabel('Time (s)')
-        ylabel('Sensor Value')
-    case 'Go To'
-        figure()
-        hold on
-        robot_legend = {};
-        xs = zeros(1,NUM_ROBOTS);
-        ys = zeros(1,NUM_ROBOTS);
-        for i=1:NUM_ROBOTS
-            leg_str1= 'Robot Number  ';
-            rob_num_legend= num2str(i);
-            robot_legend{i} = strcat(leg_str1,leg_str1);
-            %legend_label= strcat(leg_str1, rob_num_legend);
-            ps(i) = plot(Robot_Data(i).x, Robot_Data(i).y,'LineWidth',2);
-            plot(Robot_Data(i).x(1), Robot_Data(i).y(1), 'kx');
-            plot(Robot_Data(i).x(end), Robot_Data(i).y(end), 'ko')
-            xs(i) = Robot_Data(i).x(end); 
-            ys(i) = Robot_Data(i).y(end);
-        end
-        x = sum(xs)/NUM_ROBOTS;
-        y = sum(ys)/NUM_ROBOTS;
-        ps(length(ps)+1) = plot(x,y,'k*','MarkerSize',18);
-        ps(length(ps)+1) = plot(GoTo(1),GoTo(2), 'ks','MarkerSize',18);
-        title ('Time History of Robot Positions','fontsize',12), xlabel('X (m)','fontsize',12), ylabel('Y (m)','fontsize',12),
-        hold off
-    case 'Incompatible'
-        disp('You have selected an incompatible pair of behaviors, such as selecting multiple of the FindMin/FindMax/FindContour behaviors. Plots could not be generated.')
-        
-    otherwise
-        disp('Selected Behavior(s) do not currently have a post-processing plot available.')
-end
-
-figure()
-hold on
-for i=1:NUM_ROBOTS
-    leg_str1= 'Robot Number  ';
-    rob_num_legend= num2str(i);
-    %legend_label= strcat(leg_str1, rob_num_legend);
-    plot3(Robot_Data(i).x, Robot_Data(i).y,Robot_Data(i).sensor_value,'LineWidth',2);
-end
-contour3(X,Y,Z,15)
-view(-45,45)
-%surf(X,Y,Z) 
-title ('Time History of Robot Positions','fontsize',12), xlabel('X (m)','fontsize',12), ylabel('Y (m)','fontsize',12),zlabel('Sensor Value','fontsize',12)
-hold off
-end
-
+%% addBlockAndSpace()
 function [] = addBlockAndSpace(base_model, new_model,vert_spacing, hor_spacing, i )
 add_block(base_model, new_model)
 pos=get_param(new_model,'position');
@@ -640,5 +358,76 @@ pos(2)=pos(2)-vert_spacing*(i-1);
 pos(4)=pos(4)-vert_spacing*(i-1);
 set_param(new_model,'position',pos);
 end
+%% ConfigureProjectPath()
+function [project_path] = ConfigureProjectPath
+[project_path] = fileparts(mfilename('fullpath'));
+cd(project_path);
+if exist(fullfile(project_path,'results'))==0
+    mkdir(project_path,'results')
+    mkdir(fullfile(project_path,'results'),'videos')
+end
 
+addpath(fullfile(project_path,'utilities'),fullfile(project_path,'utilities/testbed'),fullfile(project_path,'utilities/behaviors'));
+addpath(fullfile(project_path,'results'),fullfile(project_path,'results/videos'));
+end
+
+%% SetRandomRobotInitialConditions
+function [simIn_with_ICs] = SetRandomRobotInitialConditions(simIn, Nrobots, field_width)
+
+rand_width=field_width*.6;
+
+for j=1:Nrobots
+    x(j)=rand(1)*(2*rand_width)-rand_width;
+    y(j)=rand(1)*(2*rand_width)-rand_width;
+    initialCondition{j}=sprintf('[%g %g 0]',x(j),y(j));
+    simIn = setBlockParameter(simIn,['Swarm_Robot_N/Robot ',num2str(j),' SimResponse/Initial Conditions'],'Value',initialCondition{j});
+end
+
+simIn_with_ICs = simIn;
+end
+
+%% AnalyzeTimingData()
+function [min_t, max_t,avg_t,realtime_f]= AnalyzeTimingData(out,times,Nrobots)
+
+SIM_TIME = times(1);
+
+disp('parallel results processing here')
+for i = 1:length(out)
+    runtimes(i) = out(i).SimulationMetadata.TimingInfo.ExecutionElapsedWallTime;
+end
+
+disp('-------Simulation Analysis-----------')
+fprintf('Simulation Runtime: %0.2f s\n',SIM_TIME)
+fprintf('Min Wall Runtime: %0.2f s\n',min(runtimes))
+fprintf('Max Wall Runtime: %0.2f s\n',max(runtimes))
+fprintf('Average Wall Runtime: %0.2f s\n', sum(runtimes)/length(runtimes))
+fprintf('Real-Time Factor: %0.2f \n',SIM_TIME/(sum(runtimes)/length(runtimes)) )
+disp('-------------------------------------')
+min_t = min(runtimes);
+max_t = max(runtimes);
+avg_t = sum(runtimes)/length(runtimes);
+realtime_f = SIM_TIME/(sum(runtimes)/length(runtimes));
+
+end
+
+%% ExtractRobotData()
+function [data] = ExtractRobotData(out,cfg,Nrobots)
+% NUM_SIGNALS_PER_ROBOT=4;
+% est_num_robots=size(simOut.simout.Data,2)/NUM_SIGNALS_PER_ROBOT;
+
+for i=1:numel(out)
+    data(i).out = out(i);
+    data(i).cfg = cfg;
+    data(i).cfg.Nrobots = Nrobots;
+    
+    % Extract individual robot data and organize into structure array
+    for j=1:Nrobots
+        data(i).robot(j).x=out(i).simout.Data(:,j*4-3);
+        data(i).robot(j).y=out(i).simout.Data(:,j*4-2);
+        data(i).robot(j).theta=out(i).simout.Data(:,j*4-1);
+        data(i).robot(j).sensor_value=out(i).simout.Data(:,j*4);
+        data(i).robot(j).time=out(i).simout.time;
+    end
+end
+end
 
