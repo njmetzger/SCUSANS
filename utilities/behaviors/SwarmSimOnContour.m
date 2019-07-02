@@ -1,12 +1,10 @@
-function [contourState,  onContour, belowContour, aboveContour] = SwarmSimOnContour(RobotParams, NRobot, SensorRange, DesiredValue,CONTOUR_BUFFER)
+function [contourState] = SwarmSimOnContour(RobotParams, NRobot, SensorRange, DesiredValue,CONTOUR_BUFFER)
 % SWARMSIMONCOUNTER - <Determines if a robot is above, below, or on a
 % desired contour value.>
 
 % Outputs:
 %   contourState     1=below contour, 2= above contour, 3= on contour
-%   onContour        TRUE if on contour
-%   belowContour     TRUE if below contour
-%   aboveContour     TRUE if above contour
+
 %% Initialize Variables
 
 % Determine number of robots based off length of robot params vector 

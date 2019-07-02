@@ -27,7 +27,7 @@ function [ThetaCommand] = SwarmSimSum(Attract, Disperse, Avoidance,GoTo, FindMin
 % t_agg = Attract(3) + Disperse(3) + Avoidance(3) + FindMin(3) + FindMax(3) % + NewBehavior(3) %
 Total = [0.0 0.0 0.0];
 
-Total= 2.5*Attract + Disperse + 100*Avoidance +GoTo+ 8*FindMin + 8*FindMax + FindContour + FollowRidge + FollowTrench;
+Total= 2.5*Attract + Disperse + 100*Avoidance +GoTo+ 3*FindMin + 2*FindMax + FindContour + FollowRidge + FollowTrench;
 
 x_agg= Total(1);
 y_agg= Total(2);

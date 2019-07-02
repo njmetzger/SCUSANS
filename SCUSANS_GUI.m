@@ -189,15 +189,14 @@ function SetBehaviors_PB_Callback(hObject, eventdata, handles)
     % Swarm_Robot_Base_a are turned on/off based on paired checkboxes
 base = handleVersion(handles);
 
-% Attract= num2str(handles.cbox_Attract.Value)
-set_param(strcat(base,'/Robot 1 Behavior/Attract_Switch'),'sw',num2str(handles.cbox_Attract.Value))
-set_param(strcat(base,'/Robot 1 Behavior/Disperse_Switch'),'sw',num2str(handles.cbox_Disperse.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FindMin_Switch'),'sw',num2str(handles.cbox_FindMin.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FindMax_Switch'),'sw',num2str(handles.cbox_FindMax.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowRidge_Switch'),'sw',num2str(handles.cbox_RidgeFollow.Value))
-set_param(strcat(base,'/Robot 1 Behavior/FollowTrench_Switch'),'sw',num2str(handles.cbox_TrenchFollow.Value))
-set_param(strcat(base,'/Robot 1 Behavior/GoTo_Switch'),'sw',num2str(handles.cbox_GoTo.Value))
+set_param(strcat(base,'/Robot 1 Behavior/Attract'),'commented',mod(handles.cbox_Attract.Value+1,2))
+set_param(strcat(base,'/Robot 1 Behavior/Disperse'),'commented',mod(handles.cbox_Disperse.Value+1,2))
+set_param(strcat(base,'/Robot 1 Behavior/Find Min'),'commented',mod(handles.cbox_FindMin.Value+1,2))
+set_param(strcat(base,'/Robot 1 Behavior/Find Max'),'commented',mod(handles.cbox_FindMax.Value+1,2))
+set_param(strcat(base,'/Robot 1 Behavior/Contour Check'),'commented',mod(handles.cbox_ContourFollow.Value+1,2));
+set_param(strcat(base,'/Robot 1 Behavior/Follow Contour'),'commented',mod(handles.cbox_ContourFollow.Value+1,2));
+set_param(strcat(base,'/Robot 1 Behavior/Follow Ridge'),'commented',mod(handles.cbox_RidgeFollow.Value+1,2));
+set_param(strcat(base,'/Robot 1 Behavior/Go To'),'commented',mod(handles.cbox_GoTo.Value+1,2));
 
 
 
@@ -302,16 +301,14 @@ function runSim_PB_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 base = handleVersion(handles);
 
-% set parameter values for switches based off behavior checkboxes 
-%set_param('untitled/Unit Delay','commented','on')
+% set parameter values for switches based off behavior checkboxes
 set_param(strcat(base,'/Robot 1 Behavior/Attract'),'commented',mod(handles.cbox_Attract.Value+1,2))
 set_param(strcat(base,'/Robot 1 Behavior/Disperse'),'commented',mod(handles.cbox_Disperse.Value+1,2))
 set_param(strcat(base,'/Robot 1 Behavior/Find Min'),'commented',mod(handles.cbox_FindMin.Value+1,2))
 set_param(strcat(base,'/Robot 1 Behavior/Find Max'),'commented',mod(handles.cbox_FindMax.Value+1,2))
-% set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
-% set_param(strcat(base,'/Robot 1 Behavior/FollowContour_Switch'),'sw',num2str(handles.cbox_ContourFollow.Value))
-% set_param(strcat(base,'/Robot 1 Behavior/FollowRidge_Switch'),'sw',num2str(handles.cbox_RidgeFollow.Value))
-% set_param(strcat(base,'/Robot 1 Behavior/FollowTrench_Switch'),'sw',num2str(handles.cbox_TrenchFollow.Value))
+set_param(strcat(base,'/Robot 1 Behavior/Contour Check'),'commented',mod(handles.cbox_ContourFollow.Value+1,2));
+set_param(strcat(base,'/Robot 1 Behavior/Follow Contour'),'commented',mod(handles.cbox_ContourFollow.Value+1,2));
+set_param(strcat(base,'/Robot 1 Behavior/Follow Ridge'),'commented',mod(handles.cbox_RidgeFollow.Value+1,2));
 set_param(strcat(base,'/Robot 1 Behavior/Go To'),'commented',mod(handles.cbox_GoTo.Value+1,2))
 
 % set behavior switch used to plot time histories of robots: 
@@ -335,6 +332,10 @@ elseif handles.cbox_RidgeFollow.Value
     behavior = 'Ridge Follow'
 elseif handles.cbox_TrenchFollow.Value
     behavior = 'Trench Follow'
+elseif handles.cbox_Attract.Value
+    behavior = 'Attract'
+elseif handles.cbox_Disperse.Value
+    behavior = 'Disperse'
 else 
     behavior = 'Null' 
 end 
@@ -461,30 +462,11 @@ elseif handles.wideRidge_RB.Value
 else
     disp('No Value Selected')
 end
-figure()
-ax=gca;
-ax.XLim=[-FIELD_WIDTH FIELD_WIDTH];
-ax.YLim=[-FIELD_WIDTH FIELD_WIDTH];
-%cmap = hsv(N);
-res=100;
-xdivs=linspace(ax.XLim(1),ax.XLim(2),res);
-ydivs=linspace(ax.YLim(1),ax.YLim(2),res);
-[X,Y] = meshgrid(xdivs,ydivs);
-if ScalarFieldSelection ~=5
-    Z=readScalarField(X,Y,ScalarFieldSelection);
-    surf(X,Y,Z);
-    title(p_title)
-    view([0 90])
-else
-    for i = 1:length(X)
-        for j = 1:length(Y)
-            Z(i,j) = readScalarField(X(i,j),Y(i,j),ScalarFieldSelection);
-        end
-    end
-    surf(X,Y,Z);
-    title(p_title)
-    view([0 90])
-end
+figure;
+ax = axes();
+DesiredValue = str2double(handles.DesiredContour_edit.String);
+[s,Z] = PlotScalarField(ax,ScalarFieldSelection,500,DesiredValue,FIELD_WIDTH,'');
+
     
 
 function robSpeed_edit_Callback(hObject, eventdata, handles)

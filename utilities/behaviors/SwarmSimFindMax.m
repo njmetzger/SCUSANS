@@ -45,7 +45,7 @@ y=RobotParams(2:4:end);
 theta=RobotParams(3:4:end);
 SensorValue=RobotParams(4:4:end);
 
-%% Find Min/Max
+%% Find Min/Max SV difference Method
 
 % Determine distance and angle to each robot 
 d = sqrt(( x(NRobot)-x).^2 + (y(NRobot)-y).^2 );
@@ -61,8 +61,9 @@ y_comp=sin(O(inRange_idx)).*amp(inRange_idx);
 
 Vfx=sum(x_comp);
 Vfy=sum(y_comp);
+mag = sqrt(Vfx^2 + Vfy^2); 
 
 % Convert the sums into a vector that is then passed to the robot:
-Vf= [Vfx(1) Vfy(1) Vft];
+Vf= [Vfx(1) Vfy(1) Vft]./mag(1);
 
 end

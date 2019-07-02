@@ -94,8 +94,9 @@ idx=find(d<=SensorRange);
 %Calculate velocity vector components: 
 Vfx= sum(Vx(idx));
 Vfy= sum(Vy(idx)); 
+mag = sqrt(Vfx^2+Vfy^2); 
 
-Vf= [Vfx Vfy Vft]/length(idx);
+Vf= [Vfx Vfy Vft]/mag;
 
 
 end 

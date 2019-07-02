@@ -32,12 +32,12 @@ resolution = 500;
 PlotScalarField(gca,ScalarFieldSelection,resolution,DesiredValue,field_width,behavior);
 
 % Only add legend for non-parallel results 
-if numel(data)==1
-    for i=1:numel(data(i).robot)
-        legend_strings{i}=sprintf('Robot %i',i);
-    end
-    legend(legend_strings,'Location','SouthEast')
-end
+% if numel(data)==1
+%     for i=1:numel(data(i).robot)
+%         legend_strings{i}=sprintf('Robot %i',i);
+%     end
+%     legend(legend_strings,'Location','SouthEast')
+% end
 
 title(['\fontsize{15} ', 'Robot Position History', char(10) ...
     '\fontsize{12} ', behavior, char(10) ...

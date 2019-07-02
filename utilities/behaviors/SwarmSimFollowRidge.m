@@ -101,7 +101,12 @@ else
     end
     
 end
-Vf = [Vfx(1) Vfy(1) Vft(1)];
+if ridgeState ==2
+    Vf = SwarmSimFindMax(RobotParams, NRobot, SensorRange);
+    Vf = Vf./sqrt(sum(Vf.^2));
+else
+    Vf = [Vfx(1) Vfy(1) Vft(1)];
+end
 end
 %% Helper Functions
 function [Vfx,Vfy,ridgeState,R2rleft,R2rRight]= checkridge(max_robot_idx,ridge_robot_idx,x,y,SensorValue,N,NRobot,inRange_idx)
@@ -214,18 +219,10 @@ else
         ridgeState= 4;
     else
         %Either slopes are not correct or lines fit too poorly
-        %Not a ridge
+        %Not a ridge so find max
         ridgeState= 2;
-        switch NRobot
-            case max_robot_idx
-                Vfx=0;
-                Vfy=0;
-            otherwise
-                Vx=x(max_robot_idx)-x(NRobot);
-                Vy=y(max_robot_idx)-y(NRobot);
-                Vfx = Vx/sqrt(sum(Vx^2+Vy^2));
-                Vfy = Vy/sqrt(sum(Vx^2+Vy^2));
-        end
+        Vfx = 0;
+        Vfy = 0; 
     end
 end
 

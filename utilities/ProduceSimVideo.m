@@ -36,7 +36,7 @@ if SAVE_VIDEO
     v.FrameRate=60;
     v.Quality=70;
     open(v)
-    F(numel(data(1).robot)) = struct('cdata',[],'colormap',[]);
+    F(numel(data(1).robot_ds)) = struct('cdata',[],'colormap',[]);
 end
  
 
@@ -45,7 +45,8 @@ fig = figure('name','Simulation Output','Units','normalized','position',[.3 .2 .
 
 
 for i = 1:numel(data)
-    num_points(i) = numel(data(i).robot(1).x);
+    num_points(i) = numel(data(i).robot_ds(1).x);
+    
 end
 max_points = max(num_points);
 
@@ -71,16 +72,17 @@ for i=1:numel(ha)
     end
     if i<= numel(data)
         ax(i).NextPlot = 'replaceChildren';
-        xlim(ax(i),[-field_width,field_width]); ylim(ax(i),[-field_width,field_width]);zlim(ax(i),[-30,150])
+        xlim(ax(i),[-field_width,field_width]); ylim(ax(i),[-field_width,field_width]);
 
         [s,Z] = PlotScalarField(ax(i),ScalarFieldSelection,500,DesiredValue,field_width,behavior);
+        zlim(ax(i),[min(min(Z))-50, max(max(Z))+50]);
         view(ax(i),[0,90])  % Note: view is flipped when using tight_subplot
-        hold all;
-        cmap = hsv(numel(data(i).robot));
-        for j =1:numel(data(i).robot)
-            h_line(i,j)= plot3(ax(i),data(i).robot(j).x(1),data(i).robot(j).y(1),(data(i).robot(j).sensor_value(1)+50),'Marker','o','MarkerFaceColor',cmap(j,:),'MarkerEdgeColor','black','LineWidth',1,'Color',cmap(j,:));
-            hold on;
-        end
+        cmap = hsv(numel(data(i).robot_ds));
+        rx= [data(i).robot_ds.x];
+        ry = [data(i).robot_ds.y];
+        rz = [data(i).robot_ds.sensor_value];
+        %h_line(i,1)= plot3(ax(i),rx(1,:),ry(1,:),rz(1,:)+50),'Marker','o','MarkerFaceColor',cmap,'MarkerEdgeColor','bla','LineWidth',1,'Color',cmap);
+        h_line(i,1) = scatter3(ax(i),rx(1,:), ry(1,:), rz(1,:)+50,25,cmap,'filled');
     end
 end
 
@@ -110,17 +112,19 @@ for k=1:max_points
         else
             m = k;
         end
-        for j=1:numel(data(i).robot)
-            set(h_line(i,j),'xdata',data(i).robot(j).x(m),'ydata',data(i).robot(j).y(m),'zdata',(data(i).robot(j).sensor_value(m)+50));
-        end
+        rx= [data(i).robot_ds.x];
+        ry = [data(i).robot_ds.y];
+        rz = [data(i).robot_ds.sensor_value];
+        %h_line(i,1)= plot3(ax(i),rx(1,:),ry(1,:),rz(1,:)+50),'Marker','o','MarkerFaceColor',cmap,'MarkerEdgeColor','bla','LineWidth',1,'Color',cmap);
+        set(h_line(i,1),'xdata',rx(m,:), 'ydata',ry(m,:),'zdata', rz(m,:)+50);
+        j=1;
         if strcmp(behavior,'Ridge Follow')
-            for p = 1:numel(data(i).robot)
-                RobotParams(4*p-3) = data(i).robot(p).x(m);
-                RobotParams(4*p-2) = data(i).robot(p).y(m);
+            for p = 1:numel(data(i).robot_ds)
+                RobotParams(4*p-3) = data(i).robot_ds(p).x(m);
+                RobotParams(4*p-2) = data(i).robot_ds(p).y(m);
                 RobotParams(4*p-1) = 0;
-                RobotParams(4*p) = data(i).robot(p).sensor_value(m);
+                RobotParams(4*p) = data(i).robot_ds(p).sensor_value(m);
             end
-            j=j+1;
             Sensor_Value = RobotParams(4:4:end);
             xs = RobotParams(1:4:end);
             ys = RobotParams(2:4:end);
@@ -129,13 +133,13 @@ for k=1:max_points
                 if length(max_robot_i)>1
                     max_robot_i = max_robot_i(1);
                 end
-                for s = 1:numel(data(i).robot)
+                for s = 1:numel(data(i).robot_ds)
                     d_from_max(s) = sqrt( ( xs(max_robot_i)-xs(s) ).^2 + ( ys(max_robot_i)-ys(s)).^2 );
                 end
                 [Vrf,rs] = SwarmSimFollowRidge(RobotParams, max_robot_i,SensorRange);
-                mx= data(i).robot(max_robot_i).x(m);
-                my= data(i).robot(max_robot_i).y(m);
-                mz= data(i).robot(max_robot_i).sensor_value(m);
+                mx= data(i).robot_ds(max_robot_i).x(m);
+                my= data(i).robot_ds(max_robot_i).y(m);
+                mz= data(i).robot_ds(max_robot_i).sensor_value(m);
                 if max(d_from_max)< SensorRange
                     mxr= max(d_from_max)*Vrf(1)+mx;
                     myr= max(d_from_max)*Vrf(2)+my;
@@ -145,38 +149,48 @@ for k=1:max_points
                 end
                 mzr= readScalarField(mxr,myr,ScalarFieldSelection);
                 
-                if j+1>length(h_line)
-                    h_line(i,j) = animatedline('Marker','o','MarkerFaceColor','k','LineWidth',3,'MaximumNumPoints',2);
-                    h_line(i,j+1) = animatedline('Marker','o','MarkerFaceColor','w','LineWidth',3,'MaximumNumPoints',1);
+%                 if j+2>length(h_line)
+%                     h_line(i,j) = line('Marker','o','MarkerFaceColor','k','LineWidth',3);
+%                     h_line(i,j+1) = line('Marker','o','MarkerFaceColor','w','LineWidth',3,'MaximumNumPoints',1);
+%                 end
+                if length(h_line(i,:))< (j+2)    ||(~isgraphics(h_line(i,j+1)) || ~isgraphics(h_line(i,j+2)))
+                    h_line(i,j+1) = plot3(ax(i),[mx mxr] ,[my, myr],[mz+50, mzr+50],'k','LineWidth',3);
+                    h_line(i,j+2) = plot3(ax(i),[mx],[my],[mz+50],'w','LineWidth',3);
+                else
+                    set( h_line(i,j+1),'xdata',[mx mxr],'ydata',[my, myr],'zdata',[mz+50, mzr+50],'Color','black','LineWidth',3);
+                    set( h_line(i,j+2),'xdata',[mx],'ydata',[my],'zdata',[mz+50],'Color','white','LineWidth',3);
                 end
-                addpoints(h_line(i,j),mx,my,mz+50);
-                addpoints(h_line(i,j),mxr,myr,mzr+50);
-                addpoints(h_line(i,j+1),mx,my,mz+50);
                 Sensor_Value(d_from_max<=SensorRange) =nan;
                 j=j+2;
             end
+        while j< length(h_line(i,:))
+            set( h_line(i,j),'xdata',[],'ydata',[],'zdata',[]);
+            j=j+1;
         end
+        end
+        pause(0.01)
     end
-%         drawnow limitrate
+    %drawnow limitrate
+    pause(0.01)
     set(0,'CurrentFigure',fig)
     
 % title(['\fontsize{15} ', 'Parallel Sim Output: ', char(10) ...
 %     '\fontsize{12} ', behavior, char(10) ...
 %     '\fontsize{10} ', sprintf('Number of Robots = %i',N), char(10)],'interpreter','tex');
 
-    figtitle.String = strrep(sprintf('%s\nTime: %0.1f s\n',data(1).cfg.simulation_name,data(1).out.simout.Time(m)),'_','-');
-    drawnow;
+    figtitle.String = strrep(sprintf('%s\nTime: %0.1f s\n',data(1).cfg.simulation_name,data(1).robot_ds(1).time(m)),'_','-');
+    %drawnow;
     if SAVE_VIDEO
         F(k) = getframe(fig);
     end
-        % Update position points for each robot
-    for n = 1:length(h_line)
-        for o = 1:length(h_line(1,:))
-            if isa(h_line(n,o),'AnimatedLine')
-                clearpoints(h_line(n,o));
-            end
-        end
-    end
+%         % Update position points for each robot
+%     for n = 1:length(h_line(:,1))
+%         for o = 1:length(h_line(1,:))
+%             if isa(h_line(n,o),'AnimatedLine')
+%                 clearpoints(h_line(n,o));
+%             end
+%         end
+%     end
 end
 tElapsed = toc(tStart);
 fprintf(1,'Elapsed time  = %4.2f sec \n',tElapsed);
@@ -192,10 +206,11 @@ if SAVE_VIDEO
         end
     end
     close(v)
+    % Note completion
+fprintf(1,'AVI File Saved! \n')
 end
 
-% Note completion
-fprintf(1,'AVI File Saved! \n')
+
 end
 
 %% tight_subplot()

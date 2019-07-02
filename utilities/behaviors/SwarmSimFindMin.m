@@ -60,9 +60,10 @@ y_comp=sin(O(inRange_idx)).*amp(inRange_idx);
 
 Vfx=sum(x_comp);
 Vfy=sum(y_comp);
+mag = sqrt(Vfx^2+Vfy^2);
 
 % Convert the sums into a vector that is then passed to the robot:
-Vf= -[Vfx(1) Vfy(1) Vft];
+Vf= -[Vfx(1) Vfy(1) Vft]./mag(1);
 
 end
 

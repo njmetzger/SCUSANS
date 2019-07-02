@@ -6,7 +6,15 @@ ax.XLim = [-field_width field_width];
 ax.YLim = [-field_width field_width];
 divs = linspace(-field_width*1.5, field_width*1.5, resolution);  % 50pct extra overlap to allow for panning
 [X,Y] = meshgrid(divs,divs);
-Z = readScalarField(X,Y,ScalarFieldSelection);
+if ScalarFieldSelection ~=5
+    Z=readScalarField(X,Y,ScalarFieldSelection);
+else
+    for i = 1:length(X)
+        for j = 1:length(Y)
+            Z(i,j) = readScalarField(X(i,j),Y(i,j),ScalarFieldSelection);
+        end
+    end
+end
 s = surf(ax,X,Y,Z-1,'EdgeColor','none');  % Want surface to be slightly below robot lines
 view([0 90])
 
